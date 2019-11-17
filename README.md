@@ -1,8 +1,5 @@
 # Advent of Code  
-Here are my solutions to the Advent of Code challenge.  
-Instead of having a repo for every year, years will be on their own branch.  
+Solutions to challenges from AoC done in Rust.  
+All solutions are written by @dashaw92 in [Rust](https://github.com/rust-lang/rust/)
 
-* [2015](https://github.com/dashaw92/Advent/tree/2015)
-* [2016](https://github.com/dashaw92/Advent/tree/2016)
-* [2017](https://github.com/dashaw92/Advent/tree/2017)
-* [2018](https://github.com/dashaw92/Advent/tree/2018)
+[Advent of Code](https://adventofcode.com/)
