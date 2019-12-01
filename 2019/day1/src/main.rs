@@ -23,7 +23,10 @@ impl Solution<&[&str], i32> for Part1 {
 
 impl Solution<&[&str], i32> for Part2 {
     fn solve(input: &[&str]) -> i32 {
-        let input = input.iter().filter_map(|line| line.parse::<i32>().ok()).collect::<Vec<_>>();
+        let input = input
+            .iter()
+            .filter_map(|line| line.parse::<i32>().ok())
+            .collect::<Vec<_>>();
 
         input.into_iter().fold(0, |acc, mut x| {
             let mut total = 0;
