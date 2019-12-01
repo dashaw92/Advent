@@ -23,23 +23,21 @@ impl Solution<&[&str], i32> for Part1 {
 
 impl Solution<&[&str], i32> for Part2 {
     fn solve(input: &[&str]) -> i32 {
-        let mut total = 0;
         let input = input.iter().filter_map(|line| line.parse::<i32>().ok()).collect::<Vec<_>>();
 
-        for mut mass in input {
-            while mass >= 0 {
-                mass = calculate_fuel(mass);
-                
-                //don't allow negative values to taint the output
-                if mass < 0 {
+        input.into_iter().fold(0, |acc, mut x| {
+            let mut total = 0;
+            while x >= 0 {
+                x = calculate_fuel(x);
+                if x < 0 {
                     break;
                 }
 
-                total += mass;
+                total += x;
             }
-        }
 
-        total
+            acc + total
+        })
     }
 }
 
