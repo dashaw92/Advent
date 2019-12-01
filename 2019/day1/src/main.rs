@@ -1,22 +1,15 @@
-use std::fs::read_to_string;
-use std::io::Result;
+use aoc::*;
 
-fn main() -> Result<()> {
-    let file = read_to_string("input.txt")?;
+fn main() {
+    let file = read_input("input.txt");
     let input: Vec<_> = file.lines().map(|line| line.as_ref()).collect();
 
     println!("Part 1: {}", Part1::solve(&input));
     println!("Part 2: {}", Part2::solve(&input));
-
-    Ok(())
 }
 
 struct Part1;
 struct Part2;
-
-trait Solution<T, R> {
-    fn solve(input: T) -> R;
-}
 
 impl Solution<&[&str], i32> for Part1 {
     fn solve(input: &[&str]) -> i32 {
