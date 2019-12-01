@@ -44,5 +44,5 @@ impl Solution<&[&str], i32> for Part2 {
 }
 
 fn calculate_fuel(mass: i32) -> i32 {
-    f64::floor(mass as f64 / 3.) as i32 - 2
+    mass / 3 - 2
 }
