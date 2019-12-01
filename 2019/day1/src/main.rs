@@ -32,11 +32,11 @@ impl Solution<&[&str], i32> for Part2 {
             let mut total = 0;
             while x >= 0 {
                 x = calculate_fuel(x);
-                if x < 0 {
-                    break;
+                
+                match x {
+                    x if x >= 0 => total += x,
+                    _ => break,
                 }
-
-                total += x;
             }
 
             acc + total
