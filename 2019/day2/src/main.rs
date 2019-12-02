@@ -25,25 +25,8 @@ impl Solution<&mut Vec<u32>, u32> for Part1 {
 
 impl Solution<&mut Vec<u32>, u32> for Part2 {
     fn solve(input: &mut Vec<u32>) -> u32 {
-        let mut final_noun = 0;
-        let mut final_verb = 0;
-
-        'outer: for noun in 0..=99 {
-            for verb in 0..=99 {
-                let mut copy = input.clone();
-                copy[1] = noun;
-                copy[2] = verb;
-
-                let output = run_tape(copy);
-                if output[0] == 19_690_720 {
-                    final_noun = noun;
-                    final_verb = verb;
-                    break 'outer;
-                }
-            }
-        }
-
-        100 * final_noun + final_verb
+        let (noun, verb) = part2_solver(input.clone());
+        100 * noun + verb
     }
 }
 
@@ -75,4 +58,21 @@ fn run_tape(mut input: Vec<u32>) -> Vec<u32> {
     }
 
     input.clone()
+}
+
+fn part2_solver(input: Vec<u32>) -> (u32, u32) {
+    for noun in 0..=99 {
+        for verb in 0..=99 {
+            let mut copy = input.clone();
+            copy[1] = noun;
+            copy[2] = verb;
+
+            let output = run_tape(copy);
+            if output[0] == 19_690_720 {
+                return (noun, verb);
+            }
+        }
+    }
+
+    unreachable!()
 }
