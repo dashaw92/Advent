@@ -35,20 +35,20 @@ impl Solution<&mut Vec<u32>, u32> for Part2 {
                 copy[2] = verb;
 
                 let output = run_tape(copy);
-                if output[0] == 19690720 {
+                if output[0] == 19_690_720 {
                     final_noun = noun;
                     final_verb = verb;
                     break 'outer;
                 }
             }
         }
-        
+
         100 * final_noun + final_verb
     }
 }
 
 fn is_opcode(val: u32) -> bool {
-    [1,2,99].contains(&val)
+    [1, 2, 99].contains(&val)
 }
 
 fn run_tape(mut input: Vec<u32>) -> Vec<u32> {
@@ -68,9 +68,9 @@ fn run_tape(mut input: Vec<u32>) -> Vec<u32> {
             1 => input[dest] = input[val1] + input[val2],
             2 => input[dest] = input[val1] * input[val2],
             99 => break,
-            _ => {},
+            _ => {}
         }
-        
+
         pc += 4;
     }
 
