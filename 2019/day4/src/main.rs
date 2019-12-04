@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use aoc::Solution;
 use std::env;
 use std::ops::Range;
@@ -17,37 +15,30 @@ fn main() {
 struct Part1;
 struct Part2;
 
-impl Solution<&str, Vec<Password>> for Part1 {
-    fn solve(input: &str) -> Vec<Password> {
+impl Solution<&str, Vec<isize>> for Part1 {
+    fn solve(input: &str) -> Vec<isize> {
         let range = to_range(input).expect("Failed to parse range from args.");
-        range.into_iter().filter_map(|x| {
-            let result = is_valid_p1(&x);
-            match result {
-                (false, _) => None,
-                (true, ch) => Some(Password { value: x, repeated: ch })
-            }
-        }).collect::<Vec<_>>()
+        range.into_iter().filter(is_valid_p1).collect::<Vec<_>>()
     }
 }
 
-impl Solution<Vec<Password>, usize> for Part2 {
-    fn solve(input: Vec<Password>) -> usize {
+impl Solution<Vec<isize>, usize> for Part2 {
+    fn solve(input: Vec<isize>) -> usize {
         input.into_iter().filter(adj_only_two).count()
     }
 }
 
-fn adj_only_two(password: &Password) -> bool {
-    let chars = to_char_vec(password.value);
-    
-    let mut count = 0;
-    for ch in chars {
-        if ch != password.repeated {
-            continue;
-        }
+fn adj_only_two(password: &isize) -> bool {
+    use std::collections::HashMap;
 
-        count += 1;
+    let chars = to_char_vec(*password);
+
+    let mut map = HashMap::new();
+    for ch in chars {
+        *map.entry(ch).or_insert(0) += 1;
     }
-    count == 2
+
+    map.values().any(|&occurrences| occurrences == 2)
 }
 
 fn to_char_vec(val: isize) -> Vec<char> {
@@ -56,7 +47,7 @@ fn to_char_vec(val: isize) -> Vec<char> {
         .collect()
 }
 
-fn is_valid_p1(val: &isize) -> (bool, char) {
+fn is_valid_p1(val: &isize) -> bool {
     fn never_decreases(digits: &[char]) -> bool {
         let first = digits.iter();
         let second = digits.iter().skip(1);
@@ -64,26 +55,16 @@ fn is_valid_p1(val: &isize) -> (bool, char) {
         first.zip(second).all(|(d1, d2)| d1 <= d2)
     }
 
-    fn has_adjacent(digits: &[char]) -> (bool, char) {
+    fn has_adjacent(digits: &[char]) -> bool {
         let first = digits.iter();
         let second = digits.iter().skip(1);
 
-        let mut repeated = ' ';
-        let found = first.zip(second).any(|(d1, d2)| {
-            if d1 == d2 {
-                repeated = *d1;
-            }
-
-            d1 == d2
-        });
-
-        (found, repeated)
+        first.zip(second).any(|(d1, d2)| d1 == d2)
     }
 
     let digits = to_char_vec(*val);
 
-    let (adjacent, repeated) = has_adjacent(&digits);
-    (*val < 10_000_000 && never_decreases(&digits) && adjacent, repeated)
+    *val < 10_000_000 && never_decreases(&digits) && has_adjacent(&digits)
 }
 
 fn to_range(input: &str) -> Option<Range<isize>> {
@@ -93,9 +74,4 @@ fn to_range(input: &str) -> Option<Range<isize>> {
         (Ok(start), Ok(end)) => Some(start..end),
         _ => None,
     }
-}
-
-struct Password {
-    value: isize,
-    repeated: char,
 }
