@@ -42,9 +42,7 @@ fn adj_only_two(password: &isize) -> bool {
 }
 
 fn to_char_vec(val: isize) -> Vec<char> {
-    val.to_string()
-        .chars()
-        .collect()
+    val.to_string().chars().collect()
 }
 
 fn is_valid_p1(val: &isize) -> bool {
