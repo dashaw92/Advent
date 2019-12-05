@@ -65,11 +65,11 @@ fn is_valid_p1(val: &isize) -> bool {
     *val < 10_000_000 && never_decreases(&digits) && has_adjacent(&digits)
 }
 
-fn to_range(input: &str) -> Option<Range<isize>> {
+fn to_range(input: &str) -> Result<Range<isize>, ()> {
     let parts: Vec<_> = input.split("-").collect();
 
     match (parts[0].parse(), parts[1].parse()) {
-        (Ok(start), Ok(end)) => Some(start..end),
-        _ => None,
+        (Ok(start), Ok(end)) => Ok(start..end),
+        _ => Err(()),
     }
 }
