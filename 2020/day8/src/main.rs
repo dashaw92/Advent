@@ -4,7 +4,7 @@ use aoc::*;
 
 fn main() {
     let input = read_input("input.txt");
-    let mut cpu: Cpu = input.into();
+    let mut cpu: Cpu = input.clone().into();
 
     loop {
         match cpu.run_part_1() {
@@ -74,17 +74,16 @@ impl Cpu {
             return Some(self.acc);
         }
 
+        let mut to_increment = 1;
+
         let instruction = &self.tape[self.pc];
         match *instruction {
             Instruction::Nop(_) => {},
-            Instruction::Jmp(distance) => {
-                self.pc = (self.pc as i32 + distance) as usize;
-                return None;
-            }
+            Instruction::Jmp(distance) => to_increment = distance,
             Instruction::Acc(amount) => self.acc += amount,
         }
 
-        self.pc += 1;
+        self.pc = (self.pc as i32 + to_increment) as usize;
         None
     }
 
