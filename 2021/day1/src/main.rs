@@ -35,7 +35,8 @@ pub fn solve(input: &[usize], window_size: usize) -> usize {
 mod test {
     use super::*;
 
-    const PROVIDED_INPUT: [usize; 10] = [199,
+    const PROVIDED_INPUT: [usize; 10] = [
+        199,
         200,
         208,
         210,
