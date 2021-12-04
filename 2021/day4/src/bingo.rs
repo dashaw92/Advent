@@ -1,4 +1,3 @@
-use std::convert::identity;
 use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 

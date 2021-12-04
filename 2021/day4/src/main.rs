@@ -5,13 +5,15 @@ use std::fs::read_to_string;
 use crate::bingo::BingoCard;
 
 fn main() -> Result<(), Box<dyn Error>>{
-    let mut input: Vec<String> = read_to_string("input.txt")?.lines().map(ToOwned::to_owned).collect();
+    let input: Vec<String> = read_to_string("input.txt")?.lines().map(ToOwned::to_owned).collect();
 
-    println!("Part 1: Score of first winning card: {}", solve(&input));
+    let solutions = solve(&input);
+    println!("Part 1: Score of first winning card: {}", solutions.0);
+    println!("Part 2: Score of last winning card: {}", solutions.1);
     Ok(())
 }
 
-fn solve(input: &[String]) -> usize {
+fn solve(input: &[String]) -> (usize, usize) {
     let numbers: Vec<u8> = input[0].split(",")
         .filter_map(|num| num.parse().ok())
         .collect();
@@ -26,16 +28,33 @@ fn solve(input: &[String]) -> usize {
         .map(|board| BingoCard::new(&board))
         .collect();
 
-    for num in numbers {
-        for mut card in &mut cards {
+    let mut winners = Vec::with_capacity(cards.len());
+    let mut first_score = 0;
+    let mut last_num = 0;
+    let total = cards.len();
+
+    'outer: for num in numbers {
+        for (idx, card) in cards.iter_mut().enumerate() {
             card.mark(num);
-            if card.is_winner() {
-                return card.score(num)
+            if card.is_winner() && !winners.contains(&idx) {
+                if winners.is_empty() {
+                    first_score = card.score(num);
+                }
+
+                winners.push(idx);
+                if winners.len() == total {
+                    break 'outer
+                }
             }
+
+            last_num = num;
         }
     }
 
-    0
+    let last_score = winners.last()
+        .map(|&idx| cards[idx].score(last_num))
+        .unwrap_or(0);
+    (first_score, last_score)
 }
 
 #[cfg(test)]
@@ -63,8 +82,8 @@ mod test {
     use super::*;
 
     #[test]
-    fn provided_p1() {
+    fn provided() {
         let lines: Vec<String> = INPUT.lines().map(ToOwned::to_owned).collect();
-        assert_eq!(4512, solve(&lines));
+        assert_eq!((4512, 1924), solve(&lines));
     }
 }
