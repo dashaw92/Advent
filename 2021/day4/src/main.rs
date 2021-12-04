@@ -1,8 +1,6 @@
-mod bingo;
-
 use std::error::Error;
 use std::fs::read_to_string;
-use crate::bingo::BingoCard;
+use aoc::bingo::BingoCard;
 
 fn main() -> Result<(), Box<dyn Error>>{
     let input: Vec<String> = read_to_string("input.txt")?.lines().map(ToOwned::to_owned).collect();

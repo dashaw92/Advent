@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug)]
-pub(crate) struct BingoCard {
+pub struct BingoCard {
     board: Vec<Slot>,
     dims: (usize, usize),
 }
@@ -105,7 +105,7 @@ impl Display for BingoCard {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) enum Slot {
+pub enum Slot {
     Marked(u8),
     Unmarked(u8),
 }
