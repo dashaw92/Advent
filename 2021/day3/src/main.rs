@@ -1,49 +1,35 @@
 use std::error::Error;
 use std::fs::read_to_string;
 
-mod util;
-
 fn main() -> Result<(), Box<dyn Error>>{
-    let input: Vec<usize> = read_to_string("input.txt")?
+    let input: Vec<String> = read_to_string("input.txt")?
         .lines()
-        .filter_map(|x| usize::from_str_radix(x, 2).ok())
+        .map(ToOwned::to_owned)
         .collect();
 
     println!("Part 1: {}", solve(&input));
     Ok(())
 }
 
-fn solve(input: &[usize]) -> usize {
-    use util::*;
-    //every index represents a bit starting from LSB.
-    //index 0 = 1st bit
-    //value = number of times it was 1 in the entire list of input
-    let mut gamma_bits = [0; NUM_BITS];
+fn solve(input: &[impl AsRef<str>]) -> i32 {
+    let mask = "1".repeat(input[0].as_ref().len());
+    let mask = i32::from_str_radix(&mask, 2).unwrap();
 
-    input.iter().for_each(|&digit| run_for_num(digit, &mut gamma_bits));
-
-    //convert the decimal array to binary
-    normalize(input.len(), &mut gamma_bits, true);
-
-    let gamma = to_decimal(&gamma_bits);
-    let epsilon = loop {
-        let mut epsilon = 0;
-        let mut gamma = gamma;
-        let mut idx = 0;
-        while gamma > 0 {
-            let bit = gamma & (1 << idx);
-            epsilon |= match bit {
-                0 => 1 << idx,
-                _ => 0,
-            };
-
-            gamma ^= bit;
-            idx += 1;
+    let gamma = (0..input[0].as_ref().len()).map(|pos| {
+        input.iter()
+            .map(AsRef::as_ref)
+            .filter(|s| s.chars().nth(pos) == Some('0'))
+            .count()
+    }).fold(String::new(), |acc, count| {
+        if count > input.len() / 2 {
+            acc + "0"
+        } else {
+            acc + "1"
         }
+    });
 
-        break epsilon
-    };
-
+    let gamma = i32::from_str_radix(&gamma, 2).unwrap();
+    let epsilon = gamma ^ mask;
     gamma * epsilon
 }
 
@@ -51,19 +37,19 @@ fn solve(input: &[usize]) -> usize {
 mod test {
     use super::*;
 
-    const PROVIDED: [usize; 12] = [
-        0b00100,
-        0b11110,
-        0b10110,
-        0b10111,
-        0b10101,
-        0b01111,
-        0b00111,
-        0b11100,
-        0b10000,
-        0b11001,
-        0b00010,
-        0b01010,
+    const PROVIDED: [&str; 12] = [
+        "00100",
+        "11110",
+        "10110",
+        "10111",
+        "10101",
+        "01111",
+        "00111",
+        "11100",
+        "10000",
+        "11001",
+        "00010",
+        "01010",
     ];
 
     #[test]
