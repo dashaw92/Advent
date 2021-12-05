@@ -51,7 +51,7 @@ impl Line {
                 (x, y) if x == 0 && y <  0 => ( 0,  1),
                 (x, y) if x == 0 && y == 0 => ( 0,  0),
                 (x, y) if x == 0 && y > 0 =>  ( 0, -1),
-                _ => (0, 0),
+                _ => panic!("Oh no!"),
             }
         } else {
             if self.start.0 > self.end.0 {
