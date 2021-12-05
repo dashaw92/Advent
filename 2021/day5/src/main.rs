@@ -2,21 +2,28 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs::read_to_string;
 
-type P = (usize, usize);
+type P = (isize, isize);
 
 fn main() -> Result<(), Box<dyn Error>>{
     let input: Vec<Line> = read_to_string("input.txt")?
         .lines().map(Line::from).collect();
 
-    println!("Part 1: Positions with 2 or more intersections: {}", solve_p1(&input));
+    println!("Part 1: Positions with 2 or more intersections: {}", solve(&input, false));
+    println!("Part 2: Including diagonals with 2 or more intersections: {}", solve(&input, true));
     Ok(())
 }
 
-fn solve_p1(lines: &[Line]) -> usize {
+fn solve(lines: &[Line], part2: bool) -> usize {
     let mut map: HashMap<P, usize> = HashMap::new();
     lines.iter()
-        .filter(|line| line.start.0 == line.end.0 || line.start.1 == line.end.1)
-        .flat_map(|line| line.all_points().into_iter())
+        .filter(|line| {
+            if !part2 {
+                line.start.0 == line.end.0 || line.start.1 == line.end.1
+            } else {
+                true
+            }
+        })
+        .flat_map(|line| line.all_points(part2).into_iter())
         .for_each(|p| *map.entry(p).or_insert(0) += 1);
 
 
@@ -31,19 +38,41 @@ struct Line {
 }
 
 impl Line {
-    fn all_points(&self) -> Vec<P> {
+    fn all_points(&self, diag: bool) -> Vec<P> {
         //p1: only vert or horiz
-
-        //hmph
-        if self.start.0 > self.end.0 {
-            (self.end.0..=self.start.0).map(|pos| (pos, self.start.1)).collect()
-        } else if self.start.0 < self.end.0 {
-            (self.start.0..=self.end.0).map(|pos| (pos, self.start.1)).collect()
-        } else if self.start.1 > self.end.1 {
-            (self.end.1..=self.start.1).map(|pos| (self.start.0, pos)).collect()
+        let delta: (isize, isize) = if diag {
+            match (self.start.0 - self.end.0, self.start.1 - self.end.1) {
+                (x, y) if x <  0 && y >  0 => ( 1, -1),
+                (x, y) if x <  0 && y == 0 => ( 1,  0),
+                (x, y) if x <  0 && y <  0 => ( 1,  1),
+                (x, y) if x >  0 && y >  0 => (-1, -1),
+                (x, y) if x >  0 && y == 0 => (-1,  0),
+                (x, y) if x >  0 && y <  0 => (-1,  1),
+                (x, y) if x == 0 && y <  0 => ( 0,  1),
+                (x, y) if x == 0 && y == 0 => ( 0,  0),
+                (x, y) if x == 0 && y > 0 =>  ( 0, -1),
+                _ => (0, 0),
+            }
         } else {
-            (self.start.1..=self.end.1).map(|pos| (self.start.0, pos)).collect()
+            if self.start.0 > self.end.0 {
+                (-1, 0)
+            } else if self.start.0 < self.end.0 {
+                (1, 0)
+            } else if self.start.1 > self.end.1 {
+                (0, -1)
+            } else {
+                (0, 1)
+            }
+        };
+
+        let mut points = Vec::new();
+        let mut current = (self.start.0, self.start.1);
+        points.push(current);
+        while current != (self.end.0, self.end.1) {
+            current = (current.0 + delta.0, current.1 + delta.1);
+            points.push(current);
         }
+        points
     }
 }
 
@@ -84,6 +113,16 @@ mod test {
             .map(Line::from)
             .collect();
 
-        assert_eq!(5, solve_p1(&lines))
+        assert_eq!(5, solve(&lines, false))
+    }
+
+    #[test]
+    fn provided_p2() {
+        let lines: Vec<Line> = PROVIDED.iter()
+            .map(|&s| s)
+            .map(Line::from)
+            .collect();
+
+        assert_eq!(12, solve(&lines, true))
     }
 }
