@@ -9,12 +9,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
     input.sort();
 
-    #[cfg(debug_assertions)]
-    println!("\
-    Warning: Debug builds of this program will take a LONG time for part 2!\n\
-Use cargo run --release instead!
-    ");
-
     println!("Part 1: {}", solve(&input, false));
     println!("Part 2: {}", solve(&input, true));
     Ok(())
@@ -24,7 +18,7 @@ fn solve(input: &[i32], part2: bool) -> i32 {
     let p1_burn = |idx, pos| i32::abs(idx - pos);
     let p2_burn = |idx, pos| {
         let diff = i32::abs(idx - pos);
-        (1..=diff).sum::<i32>()
+        diff * (diff + 1) / 2
     };
 
     let min = input[0];
