@@ -59,6 +59,11 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!(7, solve(&PROVIDED));
+        assert_eq!(7, solve(&PROVIDED, (3, 1)));
+    }
+
+    #[test]
+    fn provided_p2() {
+        assert_eq!(336, solve_p2(&PROVIDED));
     }
 }
