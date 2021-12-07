@@ -9,38 +9,35 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
     input.sort();
 
-    println!("Part 1: {}", solve_p1(&input));
-    println!("Part 2: {}", solve_p2(&input));
+    #[cfg(debug_assertions)]
+    println!("\
+    Warning: Debug builds of this program will take a LONG time for part 2!\n\
+Use cargo run --release instead!
+    ");
+
+    println!("Part 1: {}", solve(&input, false));
+    println!("Part 2: {}", solve(&input, true));
     Ok(())
 }
 
-fn solve_p1(input: &[i32]) -> i32 {
-    let min = input[0];
-    let max = input[input.len() - 1];
-    (min..=max).map(|pos| {
-        input.iter()
-            .map(|curr| i32::abs(pos - curr))
-            .fold(0, |acc, current| acc + current)
-    }).min().unwrap()
-}
+fn solve(input: &[i32], part2: bool) -> i32 {
+    let p1_burn = |idx, pos| i32::abs(idx - pos);
+    let p2_burn = |idx, pos| {
+        let diff = i32::abs(idx - pos);
+        (1..=diff).sum::<i32>()
+    };
 
-//lol this doesn't finish with the debug build because of how inefficient it is
-//TODO
-fn solve_p2(input: &[i32]) -> i32 {
     let min = input[0];
     let max = input[input.len() - 1];
     (min..=max).map(|pos| {
         input.iter()
             .map(|curr| {
-                let diff = i32::abs(pos - curr);
-                let mut burn = 0;
-                let mut counter = 1;
-                for _ in 0..diff {
-                    burn += counter;
-                    counter += 1;
+                if !part2 {
+                    p1_burn(pos, curr)
+                } else {
+                    p2_burn(pos, curr)
                 }
-
-                burn
-            }).fold(0, |acc, current| acc + current)
+            })
+            .fold(0, |acc, current| acc + current)
     }).min().unwrap()
 }
