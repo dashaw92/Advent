@@ -4,45 +4,25 @@ use std::fs::read_to_string;
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    println!("Part 1: Number of fish after 80 days: {}", solve_p1(&input));
+    println!("Part 1: Number of fish after 80 days: {}", solve(&input, 80));
+    println!("Part 2: Number of fish after 256 days: {}", solve(&input, 256));
     Ok(())
 }
 
-fn solve_p1(input: &str) -> usize {
-    let mut fish: Vec<Fish> = input.split(",")
-        .map(Into::into)
-        .collect();
+fn solve(input: &str, num_days: usize) -> u128 {
+    let fish: &mut [u128; 9] = &mut [0; 9];
 
-    for _ in 0..80 {
-        let new_fish: Vec<Fish> = fish.iter_mut().filter_map(|fish| fish.step()).collect();
-        fish.extend(new_fish);
+    input.split(",")
+        .map(str::trim)//I pulled my hair out over this for a solid 10 minutes (:
+        .filter_map(|num| num.parse::<u128>().ok())
+        .for_each(|num| fish[num as usize] += 1);
+
+    for _ in 0..num_days {
+        fish.rotate_left(1);
+        fish[6] += fish[8];
     }
 
-    fish.len()
-}
-
-#[derive(Debug)]
-struct Fish(isize);
-
-impl Fish {
-    fn step(&mut self) -> Option<Self> {
-        self.0 -= 1;
-        //Note: 0s are intentionally left!
-        //-1 = new fish, not 0!
-        if self.0 < 0 {
-            self.0 = 6;
-            return Some(Fish(8))
-        }
-
-        None
-    }
-}
-
-impl From<&str> for Fish {
-    fn from(num: &str) -> Self {
-        let num = num.trim().parse().unwrap();
-        Fish(num)
-    }
+    fish.iter().sum()
 }
 
 #[cfg(test)]
@@ -52,7 +32,17 @@ mod test {
     const PROVIDED: &str = "3,4,3,1,2";
 
     #[test]
+    fn small_p1() {
+        assert_eq!(26, solve(PROVIDED, 18))
+    }
+
+    #[test]
     fn provided_p1() {
-        assert_eq!(5934, solve_p1(PROVIDED))
+        assert_eq!(5934, solve(PROVIDED, 80))
+    }
+
+    #[test]
+    fn provided_p2() {
+        assert_eq!(26984457539, solve(PROVIDED, 256))
     }
 }
