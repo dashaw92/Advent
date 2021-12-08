@@ -16,6 +16,11 @@ if(-not (Test-Path -Path "$year")) {
     }
 }
 
+if(Test-Path "$year\day$day") {
+    Write-Host "$year\day$day project already exists!"
+    return
+}
+
 Set-Location "$year"
 Write-Host "Creating day$day cargo --bin project..."
 cargo new --bin ("day$day")
