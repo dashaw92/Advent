@@ -5,6 +5,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
     println!("Part 1: {}", solve_p1(&input));
+    println!("Part 2: {}", solve_p2(&input));
     Ok(())
 }
 
@@ -18,17 +19,27 @@ fn score(c: char) -> usize {
     }
 }
 
-fn solve_p1(input: impl AsRef<str>) -> usize {
-    fn o(c: char) -> char {
-        match c {
-            ')' => '(',
-            ']' => '[',
-            '}' => '{',
-            '>' => '<',
-            _ => panic!("unknown char {}", c),
-        }
+fn o(c: char) -> char {
+    match c {
+        ')' => '(',
+        ']' => '[',
+        '}' => '{',
+        '>' => '<',
+        _ => panic!("unknown char {}", c),
     }
+}
 
+fn c(c: char) -> char {
+    match c {
+        '(' => ')',
+        '[' => ']',
+        '{' => '}',
+        '<' => '>',
+        _ => panic!("unknown char {}", c),
+    }
+}
+
+fn solve_p1(input: impl AsRef<str>) -> usize {
     let input: Vec<&str> = input.as_ref()
         .lines()
         .collect();
@@ -61,7 +72,41 @@ fn solve_p1(input: impl AsRef<str>) -> usize {
 }
 
 fn solve_p2(input: impl  AsRef<str>) -> usize {
-    0
+    let input: Vec<&str> = input.as_ref()
+        .lines()
+        .collect();
+    let mut scores = Vec::new();
+
+    'outer: for nav in input {
+        let mut stack: Vec<char> = Vec::new();
+        let chars = nav.chars();
+        for ch in chars {
+            match ch {
+                '(' | '[' | '{' | '<' => stack.push(ch),
+                close => {
+                    let last = stack.pop().unwrap();
+                    let expected = o(close);
+                    if last != expected {
+                        continue 'outer; //ignore corrupted lines
+                    }
+                }
+            }
+        }
+
+        //at this point, stack contains only open brackets
+        scores.push(stack.into_iter().rev().map(c).fold(0, |acc, ch| {
+            acc * 5 + match ch {
+                ')' => 1,
+                ']' => 2,
+                '}' => 3,
+                '>' => 4,
+                _ => 0,
+            }
+        }));
+    }
+
+    scores.sort();
+    scores[scores.len() / 2]
 }
 
 #[cfg(test)]
@@ -87,6 +132,6 @@ mod test {
 
     #[test]
     fn provided_p2() {
-        assert_eq!(0, solve_p2(PROVIDED));
+        assert_eq!(288957, solve_p2(PROVIDED));
     }
 }
