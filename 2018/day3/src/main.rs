@@ -1,9 +1,11 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 const INPUT: &str = include_str!("../input.txt");
 
 fn main() {
-    println!("The total overlap is {} sq. inches", part1(INPUT));
+    let solution = solve(INPUT);
+    println!("The total overlap is {} sq. inches", solution.0);
+    println!("Claim ID {} did not overlap any other claims.", solution.1);
 }
 
 //format:
@@ -54,32 +56,33 @@ fn collect_rects(input: &str) -> HashMap<i32, Rect> {
     rects
 }
 
-fn part1(input: &str) -> i32 {
+fn solve(input: &str) -> (i32, i32) {
     let rects = collect_rects(input);
-    let mut board = vec![vec![0; 1000]; 1000];
+    let mut board = vec![vec![Vec::new(); 1000]; 1000];
 
-    for r in rects.values() {
+    let mut candidates_p2: HashSet<i32> = rects.keys().copied().collect();
+    for (id, r) in rects.iter() {
         for x in r.x1..r.x2 {
             for y in r.y1..r.y2 {
-                board[y as usize][x as usize] += 1;
+                let coord = &mut board[y as usize][x as usize];
+                coord.push(id);
+                if coord.len() > 1 {
+                    coord.iter().for_each(|&rect_id| {
+                        candidates_p2.remove(rect_id);
+                    });
+                }
             }
         }
     }
 
-    // dbg_board(&board);
-
-    board
+    let overlap = board
         .iter()
         .flatten()
-        .filter(|&&coord| coord > 1)
-        .fold(0, |acc, _| acc + 1)
-}
+        .filter(|&coord| coord.len() > 1)
+        .fold(0, |acc, _| acc + 1);
 
-// fn dbg_board(board: &[Vec<i32>]) {
-//     for line in board {
-//         println!("{line:?}");
-//     }
-// }
+    (overlap, *candidates_p2.iter().next().unwrap())
+}
 
 #[derive(Clone, Debug, Hash, PartialEq)]
 struct Rect {
@@ -99,6 +102,6 @@ mod tests {
 
     #[test]
     fn provided() {
-        assert_eq!(4, part1(PROVIDED));
+        assert_eq!((4, 3), solve(PROVIDED));
     }
 }
