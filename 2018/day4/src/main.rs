@@ -8,11 +8,13 @@ use clutter::*;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
-    println!("Part 1: {}", solve_p1(&input));
+    let solution = solve(&input);
+    println!("Part 1: {}", solution.0);
+    println!("Part 2: {}", solution.1);
     Ok(())
 }
 
-fn solve_p1(input: impl AsRef<str>) -> i32 {
+fn solve(input: impl AsRef<str>) -> (i32, i32) {
     let events = parse_events(input.as_ref());
 
     let mut sleep_time: HashMap<i32, i32> = HashMap::new();
@@ -36,19 +38,26 @@ fn solve_p1(input: impl AsRef<str>) -> i32 {
         }
     }
 
-    let (id, _) = sleep_time.iter().max_by_key(|(_, &time)| time).unwrap();
-    let ((_, minute), _) = minute_freq
-        .iter()
-        .filter(|((gid, _), _)| gid == id)
-        .max_by_key(|((_, _), &freq)| freq)
-        .unwrap();
+    let p1 = {
+        let (id, _) = sleep_time.iter().max_by_key(|(_, &time)| time).unwrap();
+        let ((_, minute), _) = minute_freq
+            .iter()
+            .filter(|((gid, _), _)| gid == id)
+            .max_by_key(|((_, _), &freq)| freq)
+            .unwrap();
+        id * minute
+    };
 
-    id * minute
+    let p2 = {
+        let ((id, minute), _) = minute_freq
+            .iter()
+            .max_by_key(|((_, _), &freq)| freq)
+            .unwrap();
+
+        id * minute
+    };
+    (p1, p2)
 }
-
-// fn solve_p2(input: impl AsRef<str>) -> usize {
-//     0
-// }
 
 #[cfg(test)]
 mod test {
@@ -75,11 +84,6 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!(240, solve_p1(PROVIDED));
-    }
-
-    #[test]
-    fn provided_p2() {
-        assert_eq!(0, solve_p2(PROVIDED));
+        assert_eq!((240, 4455), solve(PROVIDED));
     }
 }
