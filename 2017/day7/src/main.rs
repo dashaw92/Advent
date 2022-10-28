@@ -4,7 +4,7 @@ use std::fs::read_to_string;
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    println!("Part 1: {}", solve_p1(&input));
+    println!("Part 1: {:?}", solve(&input));
     Ok(())
 }
 
@@ -52,14 +52,12 @@ fn parse_progs(input: &str) -> Vec<Prog> {
     progs
 }
 
-fn solve_p1(input: impl AsRef<str>) -> String {
-    let progs = parse_progs(input.as_ref());
-
+fn find_parent(progs: &[Prog]) -> String {
     //the root program will have children, but will not appear in the is_child list
     let mut with_children = vec![];
     let mut is_child = vec![];
 
-    for prog in &progs {
+    for prog in progs {
         if !prog.children.is_empty() {
             with_children.push(prog.name.clone());
         }
@@ -76,6 +74,49 @@ fn solve_p1(input: impl AsRef<str>) -> String {
     }
 
     unreachable!("The tree must have a parent...")
+}
+
+fn find_prog(name: String, progs: &[Prog]) -> &Prog {
+    progs.iter().find(|prog| prog.name == name).unwrap()
+}
+
+fn calc(prog: &Prog, progs: &[Prog]) -> u32 {
+    if prog.children.is_empty() {
+        return prog.weight;
+    }
+
+    let weights: Vec<u32> = prog
+        .children
+        .iter()
+        .map(|name| find_prog(name.clone(), progs))
+        .map(|prog| calc(prog, progs))
+        .collect();
+    let mut exp = 0;
+    for &weight in &weights {
+        if exp == 0 {
+            exp = weight;
+        }
+
+        if exp != weight {
+            println!(
+                "Found unbalanced weight (base: {} -> {:?}) {exp}, {weight}",
+                &prog.name, &weights,
+            );
+        }
+    }
+
+    prog.weight + weights.iter().sum::<u32>()
+}
+
+fn solve(input: impl AsRef<str>) -> (String, String) {
+    let progs = parse_progs(input.as_ref());
+    let p1 = find_parent(&progs);
+
+    let base = find_prog(p1.clone(), &progs);
+
+    dbg!(calc(base, &progs));
+
+    (p1, "".into())
 }
 
 #[derive(Debug)]
@@ -110,7 +151,7 @@ cntj (57)";
 
     #[test]
     fn provided_p1() {
-        assert_eq!("tknk", solve_p1(PROVIDED));
+        assert_eq!(("tknk".to_owned(), "".to_owned()), solve(PROVIDED));
     }
 
     // #[test]
