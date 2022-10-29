@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 const INPUT: &str = include_str!("../input.txt");
 
-#[derive(Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Eq, PartialEq, Hash, Clone, Copy, Debug)]
 struct Point {
     x: i32,
     y: i32,
@@ -43,49 +43,56 @@ enum Move {
 }
 
 impl Move {
-
-    //Left unsafe so any errors just crash and don't let the program run.
-    //Saves me time assuming my program is correct if it runs.
     fn from(input: &str) -> Self {
-        match input.chars().nth(0).unwrap() {
+        match input.chars().next().unwrap() {
             'R' => Move::Right(input.get(1..).unwrap().trim().parse().unwrap()),
             'L' => Move::Left(input.get(1..).unwrap().trim().parse().unwrap()),
-            _   => Move::None,
+            _ => Move::None,
         }
     }
 }
 
 fn main() {
-    let directions: Vec<_> = "R5, L5, R5, R3".split(", ").map(Move::from).collect();
+    let directions: Vec<_> = INPUT.split(", ").map(Move::from).collect();
     let mut visited = HashMap::new();
     let mut rot = Compass::North;
     let mut pos = Point { x: 0, y: 0 };
+    let mut found_p2 = false;
 
     for direction in directions {
-        let amount = match direction {
+        let mut amount = match direction {
             Move::Right(amount) => {
                 rot = rot.right();
                 amount
-            },
+            }
             Move::Left(amount) => {
                 rot = rot.left();
                 amount
-            },
+            }
             _ => continue,
         };
 
-        match rot {
-            Compass::North => pos.y += amount,
-            Compass::South => pos.y -= amount,
-            Compass::East => pos.x += amount,
-            Compass::West => pos.x -= amount, 
-        }
+        while amount > 0 {
+            match rot {
+                Compass::North => pos.y += 1,
+                Compass::South => pos.y -= 1,
+                Compass::East => pos.x += 1,
+                Compass::West => pos.x -= 1,
+            }
 
-        if visited.contains_key(&pos) {
-            println!("Hit an intersection twice! {} blocks away.", i32::abs(pos.x - pos.y));
+            *visited.entry(pos).or_insert(0) += 1;
+
+            if !found_p2 && *visited.get(&pos).unwrap_or(&0) > 1 {
+                println!(
+                    "Hit an intersection twice! {} blocks away.",
+                    pos.x.abs() + pos.y.abs()
+                );
+                found_p2 = true;
+            }
+
+            amount -= 1;
         }
-        *visited.entry(pos).or_insert(0) += 1;
     }
 
-    println!("You are {} blocks away.", i32::abs(pos.x - pos.y));
+    println!("You are {} blocks away.", pos.x.abs() + pos.y.abs());
 }
