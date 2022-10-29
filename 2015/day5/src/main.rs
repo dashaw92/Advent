@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs::read_to_string;
 use std::io::Result;
 
@@ -64,12 +65,11 @@ fn solve_p1(input: impl AsRef<str>) -> u32 {
 fn solve_p2(input: impl AsRef<str>) -> u32 {
     fn has_pairs(line: &str) -> bool {
         let chars: Vec<char> = line.chars().collect();
-        let mut pairs: Vec<String> = chars
+        let pairs: HashSet<String> = chars
             .as_slice()
             .windows(2)
             .map(|chs| chs.iter().copied().collect())
             .collect();
-        pairs.dedup();
 
         for pair in pairs {
             if line.match_indices(&pair).count() >= 2 {
