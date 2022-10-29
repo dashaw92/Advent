@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fs::read_to_string;
+use std::marker::PhantomData;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
@@ -44,45 +45,74 @@ fn get_cmd(input: &str) -> (Cmd, Pair, Pair) {
 }
 
 fn solve(input: impl AsRef<str>) -> (i32, i32) {
-    let mut lights_p1 = Lights::get();
-    let mut lights_p2 = Lights::get();
+    let mut lights_p1: Lights<Part1> = Lights::get();
+    let mut lights_p2: Lights<Part2> = Lights::get();
 
     for instr in input.as_ref().lines() {
         let (cmd, start, end) = get_cmd(instr);
         for x in start.0..=end.0 {
             for y in start.1..=end.1 {
-                lights_p1.set(x, y, cmd, true);
-                lights_p2.set(x, y, cmd, false);
+                lights_p1.set(x, y, cmd);
+                lights_p2.set(x, y, cmd);
             }
         }
     }
 
-    let p1 = lights_p1.count_on(true);
-    let p2 = lights_p2.count_on(false);
+    let p1 = lights_p1.count_on();
+    let p2 = lights_p2.count_on();
 
     (p1, p2)
 }
 
-struct Lights {
+struct Lights<P> {
     grid: Vec<i32>,
+    _spooky: PhantomData<P>,
 }
 
-impl Lights {
+struct Part1;
+struct Part2;
+
+impl<P> Lights<P> {
     fn get() -> Self {
         Self {
             grid: vec![0; 1000 * 1000],
+            _spooky: PhantomData,
+        }
+    }
+}
+
+impl Lights<Part1> {
+    fn set(&mut self, x: usize, y: usize, cmd: Cmd) {
+        let light = &mut self.grid[y * 1000 + x];
+        match cmd {
+            Cmd::On => *light = 1,
+            Cmd::Off => *light = 0,
+            Cmd::Flip => {
+                if *light == 0 {
+                    *light = 1;
+                } else {
+                    *light = 0;
+                }
+            }
         }
     }
 
-    fn set(&mut self, x: usize, y: usize, cmd: Cmd, part1: bool) {
-        cmd.run(&mut self.grid[y * 1000 + x], part1);
+    fn count_on(&self) -> i32 {
+        self.grid.iter().filter(|&&val| val > 0).count() as i32
+    }
+}
+
+impl Lights<Part2> {
+    fn set(&mut self, x: usize, y: usize, cmd: Cmd) {
+        let light = &mut self.grid[y * 1000 + x];
+        match cmd {
+            Cmd::On => *light += 1,
+            Cmd::Off => *light = 0.max(*light - 1),
+            Cmd::Flip => *light += 2,
+        }
     }
 
-    fn count_on(&self, part1: bool) -> i32 {
-        if part1 {
-            return self.grid.iter().filter(|&&val| val > 0).count() as i32;
-        }
-
+    fn count_on(&self) -> i32 {
         self.grid.iter().sum::<i32>()
     }
 }
@@ -92,36 +122,4 @@ enum Cmd {
     On,
     Off,
     Flip,
-}
-
-impl Cmd {
-    fn run(&self, light: &mut i32, part1: bool) {
-        match self {
-            Self::On => {
-                if part1 {
-                    *light = 1;
-                } else {
-                    *light += 1;
-                }
-            }
-            Self::Off => {
-                if part1 {
-                    *light = 0;
-                } else {
-                    *light = 0.max(*light - 1);
-                }
-            }
-            Self::Flip => {
-                if part1 {
-                    if *light == 0 {
-                        *light = 1;
-                    } else {
-                        *light = 0;
-                    }
-                } else {
-                    *light += 2;
-                }
-            }
-        }
-    }
 }
