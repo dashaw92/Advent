@@ -9,25 +9,13 @@ use self::D::*;
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    println!("Distance for part 1: {}", solve_p1(&input));
-    println!("Furthest away from origin for part 2: {}", solve_p2(&input));
+    let (dist, max) = solve(&input);
+    println!("Distance for part 1: {}", dist);
+    println!("Furthest away from origin for part 2: {}", max);
     Ok(())
 }
 
-fn simulate(steps: &str) -> Pos {
-    let pos = steps
-        .split(',')
-        .filter_map(|s| s.parse().ok())
-        .fold(Pos::origin(), |pos, dir| pos.apply(dir));
-    pos
-}
-
-fn solve_p1(input: impl AsRef<str>) -> i32 {
-    let pos = simulate(input.as_ref());
-    pos.distance(&Pos::origin())
-}
-
-fn solve_p2(input: impl AsRef<str>) -> i32 {
+fn solve(input: impl AsRef<str>) -> (i32, i32) {
     let dirs: Vec<D> = input
         .as_ref()
         .split(',')
@@ -44,7 +32,7 @@ fn solve_p2(input: impl AsRef<str>) -> i32 {
         }
     }
 
-    max
+    (pos.distance(&Pos::origin()), max)
 }
 
 //Doubled coords (double y)
