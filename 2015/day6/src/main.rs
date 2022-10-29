@@ -4,7 +4,9 @@ use std::fs::read_to_string;
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    println!("Part 1: {}", solve_p1(&input));
+    let (p1, p2) = solve(&input);
+    println!("Part 1: {}", p1);
+    println!("Part 2: {}", p2);
     Ok(())
 }
 
@@ -41,42 +43,47 @@ fn get_cmd(input: &str) -> (Cmd, Pair, Pair) {
     }
 }
 
-fn solve_p1(input: impl AsRef<str>) -> usize {
-    let mut lights = Lights::get();
+fn solve(input: impl AsRef<str>) -> (i32, i32) {
+    let mut lights_p1 = Lights::get();
+    let mut lights_p2 = Lights::get();
 
     for instr in input.as_ref().lines() {
         let (cmd, start, end) = get_cmd(instr);
         for x in start.0..=end.0 {
             for y in start.1..=end.1 {
-                lights.set(x, y, cmd);
+                lights_p1.set(x, y, cmd, true);
+                lights_p2.set(x, y, cmd, false);
             }
         }
     }
 
-    lights.count_on()
+    let p1 = lights_p1.count_on(true);
+    let p2 = lights_p2.count_on(false);
+
+    (p1, p2)
 }
 
-// fn solve_p2(input: impl AsRef<str>) -> usize {
-//     0
-// }
-
 struct Lights {
-    grid: Vec<bool>,
+    grid: Vec<i32>,
 }
 
 impl Lights {
     fn get() -> Self {
         Self {
-            grid: vec![false; 1000 * 1000],
+            grid: vec![0; 1000 * 1000],
         }
     }
 
-    fn set(&mut self, x: usize, y: usize, cmd: Cmd) {
-        cmd.run(&mut self.grid[y * 1000 + x]);
+    fn set(&mut self, x: usize, y: usize, cmd: Cmd, part1: bool) {
+        cmd.run(&mut self.grid[y * 1000 + x], part1);
     }
 
-    fn count_on(&self) -> usize {
-        self.grid.iter().filter(|&&b| b).count()
+    fn count_on(&self, part1: bool) -> i32 {
+        if part1 {
+            return self.grid.iter().filter(|&&val| val > 0).count() as i32;
+        }
+
+        self.grid.iter().sum::<i32>()
     }
 }
 
@@ -86,30 +93,35 @@ enum Cmd {
     Off,
     Flip,
 }
+
 impl Cmd {
-    fn run(&self, light: &mut bool) {
+    fn run(&self, light: &mut i32, part1: bool) {
         match self {
-            Self::On => *light = true,
-            Self::Off => *light = false,
-            Self::Flip => *light = !*light,
+            Self::On => {
+                if part1 {
+                    *light = 1;
+                } else {
+                    *light += 1;
+                }
+            }
+            Self::Off => {
+                if part1 {
+                    *light = 0;
+                } else {
+                    *light = 0.max(*light - 1);
+                }
+            }
+            Self::Flip => {
+                if part1 {
+                    if *light == 0 {
+                        *light = 1;
+                    } else {
+                        *light = 0;
+                    }
+                } else {
+                    *light += 2;
+                }
+            }
         }
     }
-}
-
-#[cfg(test)]
-mod test {
-
-    use super::*;
-
-    const PROVIDED: &str = "turn on 0,0 through 999,999";
-
-    #[test]
-    fn provided_p1() {
-        assert_eq!(1_000_000, solve_p1(PROVIDED));
-    }
-
-    // #[test]
-    // fn provided_p2() {
-    //     assert_eq!(0, solve_p2(PROVIDED));
-    // }
 }
