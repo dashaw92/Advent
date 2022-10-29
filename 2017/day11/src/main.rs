@@ -10,6 +10,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
     println!("Distance for part 1: {}", solve_p1(&input));
+    println!("Furthest away from origin for part 2: {}", solve_p2(&input));
     Ok(())
 }
 
@@ -24,6 +25,26 @@ fn simulate(steps: &str) -> Pos {
 fn solve_p1(input: impl AsRef<str>) -> i32 {
     let pos = simulate(input.as_ref());
     pos.distance(&Pos::origin())
+}
+
+fn solve_p2(input: impl AsRef<str>) -> i32 {
+    let dirs: Vec<D> = input
+        .as_ref()
+        .split(',')
+        .filter_map(|s| s.parse().ok())
+        .collect();
+
+    let mut pos = Pos::origin();
+    let mut max = i32::MIN;
+    for d in dirs {
+        pos = pos.apply(d);
+        let dist = pos.distance(&Pos::origin());
+        if dist > max {
+            max = dist;
+        }
+    }
+
+    max
 }
 
 //Doubled coords (double y)
