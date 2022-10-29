@@ -8,7 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn parse_name_weight(s: &str) -> (String, u32) {
+fn parse_name_weight(s: &str) -> (String, i32) {
     let (name, weight) = s.split_once(' ').unwrap();
     let weight = weight
         .trim()
@@ -80,55 +80,75 @@ fn find_prog(name: String, progs: &[Prog]) -> &Prog {
     progs.iter().find(|prog| prog.name == name).unwrap()
 }
 
-fn calc(prog: &Prog, progs: &[Prog]) -> u32 {
+static mut BAD_WEIGHT_FOUND: bool = false;
+
+fn calc(prog: &Prog, progs: &[Prog]) -> i32 {
     if prog.children.is_empty() {
         return prog.weight;
     }
 
-    let weights: Vec<u32> = prog
+    let weights: Vec<i32> = prog
         .children
         .iter()
         .map(|name| find_prog(name.clone(), progs))
         .map(|prog| calc(prog, progs))
         .collect();
-    let mut exp = 0;
-    for &weight in &weights {
-        if exp == 0 {
-            exp = weight;
-        }
 
-        if exp != weight {
+    //The input has at most one unbalanced program, meaning if we take the first n weights,
+    //one of these patterns MUST be true, in which case we know the correct weight, and can
+    //then determine the incorrect weight by iterating over the entire weights array and finding
+    //the one that is not the same as `exp`.
+    let exp = match *weights.as_slice() {
+        [x, y, _, ..] if x == y => x,
+        [x, _, z, ..] if x == z => x,
+        [_, y, z, ..] if y == z => y,
+        [x, y] if x == y => x,
+        _ => unreachable!("In the first 3 weights, one of the above patterns must match!"),
+    };
+
+    for (idx, &weight) in weights.iter().enumerate() {
+        if weight != exp && unsafe { !BAD_WEIGHT_FOUND } {
+            unsafe {
+                BAD_WEIGHT_FOUND = true;
+            }
+
+            let prog = find_prog(prog.children[idx].clone(), progs);
+
             println!(
-                "Found unbalanced weight (base: {} -> {:?}) {exp}, {weight}",
-                &prog.name, &weights,
+                "Found unbalanced weight ({} -> {}) {exp}, {weight}.",
+                prog.name, prog.weight
+            );
+
+            let diff = exp - weight;
+
+            println!(
+                "In order for {} to be balanced, its weight must be {}.",
+                prog.name,
+                prog.weight + diff
             );
         }
     }
 
-    prog.weight + weights.iter().sum::<u32>()
+    prog.weight + weights.iter().sum::<i32>()
 }
 
-fn solve(input: impl AsRef<str>) -> (String, String) {
+fn solve(input: impl AsRef<str>) -> String {
     let progs = parse_progs(input.as_ref());
     let p1 = find_parent(&progs);
 
     let base = find_prog(p1.clone(), &progs);
 
-    dbg!(calc(base, &progs));
+    calc(base, &progs);
 
-    (p1, "".into())
+    p1
 }
 
 #[derive(Debug)]
 struct Prog {
     name: String,
-    weight: u32,
+    weight: i32,
     children: Vec<String>,
 }
-
-// fn solve_p2(input: impl AsRef<str>) -> usize {
-//     0
-// }
 
 #[cfg(test)]
 mod test {
@@ -151,7 +171,7 @@ cntj (57)";
 
     #[test]
     fn provided_p1() {
-        assert_eq!(("tknk".to_owned(), "".to_owned()), solve(PROVIDED));
+        assert_eq!("tknk".to_owned(), solve(PROVIDED));
     }
 
     // #[test]
