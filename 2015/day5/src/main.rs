@@ -5,6 +5,7 @@ fn main() -> Result<()> {
     let input = read_to_string("input.txt")?;
 
     println!("The answer for part 1 is {}", solve_p1(&input));
+    println!("The answer for part 2 is {}", solve_p2(&input));
     Ok(())
 }
 
@@ -23,7 +24,6 @@ fn check_rules(input: impl AsRef<str>, rules: &[&dyn Fn(&str) -> bool]) -> u32 {
 
     nice
 }
-
 fn solve_p1(input: impl AsRef<str>) -> u32 {
     fn nice_substr(input: &str) -> bool {
         !(input.contains("ab")
@@ -59,4 +59,57 @@ fn solve_p1(input: impl AsRef<str>) -> u32 {
     }
 
     check_rules(input, &[&nice_substr, &has_vowels, &no_duplicates])
+}
+
+fn solve_p2(input: impl AsRef<str>) -> u32 {
+    fn has_pairs(line: &str) -> bool {
+        let chars: Vec<char> = line.chars().collect();
+        let mut pairs: Vec<String> = chars
+            .as_slice()
+            .windows(2)
+            .map(|chs| chs.iter().copied().collect())
+            .collect();
+        pairs.dedup();
+
+        for pair in pairs {
+            if line.match_indices(&pair).count() >= 2 {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn has_repeat_with_sep(line: &str) -> bool {
+        let chars: Vec<char> = line.chars().collect();
+
+        for idx in 0..chars.len() {
+            if idx + 2 >= chars.len() {
+                break;
+            }
+
+            let current = chars[idx];
+            let two_from_now = chars[idx + 2];
+            if current == two_from_now {
+                return true;
+            }
+        }
+        false
+    }
+
+    check_rules(input, &[&has_pairs, &has_repeat_with_sep])
+}
+
+#[cfg(test)]
+mod tests {
+    const NAUGHTY: [&str; 2] = ["uurcxstgmygtbstg", "ieodomkazucvgmuy"];
+
+    #[test]
+    fn test_naughty_p2() {
+        use super::solve_p2;
+
+        for test in NAUGHTY {
+            assert_eq!(0, solve_p2(test));
+        }
+    }
 }
