@@ -10,14 +10,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
     let mut circuit = Circuit::from_input(input);
-    let out_a = circuit.eval("a");
+    let out_a = circuit.eval("a", &[]);
     println!("Wire 'a' has the value {out_a}");
+    let overrides = vec![("b", out_a)];
+    circuit.reset();
+    let out_a = circuit.eval("a", &overrides);
+    println!("Wire 'a' has the value {out_a} after overriding 'b'!");
     Ok(())
 }
 
 #[derive(Debug)]
 struct Circuit {
     wires: HashMap<String, Wire>,
+    original: HashMap<String, Wire>,
 }
 
 #[derive(Debug, Clone)]
@@ -113,7 +118,13 @@ impl Circuit {
             wires.insert(out.into(), wire);
         }
 
-        Self { wires }
+        let original = wires.clone();
+
+        Self { wires, original }
+    }
+
+    fn reset(&mut self) {
+        self.wires = self.original.clone();
     }
 
     fn update_wire(&mut self, name: impl AsRef<str>, value: u16) -> u16 {
@@ -127,7 +138,13 @@ impl Circuit {
         value
     }
 
-    fn eval(&mut self, wire_name: impl AsRef<str>) -> u16 {
+    fn eval(&mut self, wire_name: impl AsRef<str>, overrides: &[(&str, u16)]) -> u16 {
+        for (w_override, val) in overrides {
+            if w_override == &wire_name.as_ref() {
+                return *val;
+            }
+        }
+
         let wire = self.wires.get_mut(wire_name.as_ref()).unwrap().clone();
         match &wire.state {
             State::Value(val) => *val,
@@ -140,20 +157,20 @@ impl Circuit {
                 Instruction::Assign(target) => match target {
                     Target::Val(_) => unreachable!("This should never happen!"),
                     Target::Var(var) => {
-                        let val = self.eval(var);
+                        let val = self.eval(var, overrides);
                         self.update_wire(wire_name, val);
                         val
                     }
                 },
                 Instruction::And(w_lhs, w_rhs) => match (w_lhs, w_rhs) {
                     (Target::Val(i), Target::Var(wire)) => {
-                        let val = self.eval(wire) & i;
+                        let val = self.eval(wire, overrides) & i;
                         self.update_wire(wire_name, val);
                         val
                     }
                     (Target::Var(lhs), Target::Var(rhs)) => {
-                        let lhs = self.eval(lhs);
-                        let rhs = self.eval(rhs);
+                        let lhs = self.eval(lhs, overrides);
+                        let rhs = self.eval(rhs, overrides);
                         let val = lhs & rhs;
                         self.update_wire(wire_name, val);
                         val
@@ -162,13 +179,13 @@ impl Circuit {
                 },
                 Instruction::Or(w_lhs, w_rhs) => match (w_lhs, w_rhs) {
                     (Target::Val(i), Target::Var(wire)) => {
-                        let val = self.eval(wire) | i;
+                        let val = self.eval(wire, overrides) | i;
                         self.update_wire(wire_name, val);
                         val
                     }
                     (Target::Var(lhs), Target::Var(rhs)) => {
-                        let lhs = self.eval(lhs);
-                        let rhs = self.eval(rhs);
+                        let lhs = self.eval(lhs, overrides);
+                        let rhs = self.eval(rhs, overrides);
                         let val = lhs | rhs;
                         self.update_wire(wire_name, val);
                         val
@@ -177,7 +194,7 @@ impl Circuit {
                 },
                 Instruction::Lshift(w_lhs, rhs) => match w_lhs {
                     Target::Var(lhs) => {
-                        let lhs = self.eval(lhs);
+                        let lhs = self.eval(lhs, overrides);
                         let val = lhs << rhs;
                         self.update_wire(wire_name, val);
                         val
@@ -186,7 +203,7 @@ impl Circuit {
                 },
                 Instruction::Rshift(w_lhs, rhs) => match w_lhs {
                     Target::Var(lhs) => {
-                        let lhs = self.eval(lhs);
+                        let lhs = self.eval(lhs, overrides);
                         let val = lhs >> rhs;
                         self.update_wire(wire_name, val);
                         val
@@ -195,7 +212,7 @@ impl Circuit {
                 },
                 Instruction::Not(wire) => match wire {
                     Target::Var(wire) => {
-                        let wire = self.eval(wire);
+                        let wire = self.eval(wire, overrides);
                         let val = !wire;
                         self.update_wire(wire_name, val);
                         val
@@ -236,7 +253,7 @@ NOT y -> i";
         let mut circuit = Circuit::from_input(PROVIDED);
 
         for (name, value) in &expected {
-            assert_eq!(*value, circuit.eval(name));
+            assert_eq!(*value, circuit.eval(name, &[]));
         }
     }
 }
