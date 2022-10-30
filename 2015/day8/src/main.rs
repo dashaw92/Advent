@@ -3,12 +3,15 @@ use std::fs::read_to_string;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
+    // let input = r#""\x27""#;
 
-    println!("Part 1: {}", solve_p1(&input));
+    let (p1, p2) = solve(&input);
+    println!("Part 1: {p1}");
+    println!("Part 2: {p2}");
     Ok(())
 }
 
-fn solve_p1(input: impl AsRef<str>) -> u32 {
+fn to_runes(input: impl AsRef<str>) -> Vec<Rune> {
     let mut runes = Vec::new();
     let chars: Vec<char> = input.as_ref().chars().collect();
     let mut i = 0;
@@ -33,14 +36,44 @@ fn solve_p1(input: impl AsRef<str>) -> u32 {
         }
     }
 
+    runes
+}
+
+fn count(runes: &[Rune]) -> (u32, u32) {
     let mem = runes
         .iter()
         .fold(0, |acc, rune| acc + rune.mem_repr_count());
     let code_repr = runes
         .iter()
         .filter(|rune| !matches!(rune, Rune::Lit('"')))
-        .count();
-    mem - code_repr as u32
+        .count() as u32;
+
+    (mem, code_repr)
+}
+
+fn solve(input: impl AsRef<str>) -> (u32, u32) {
+    let runes = to_runes(input);
+
+    let (mem, code_repr) = count(&runes);
+    let p1 = mem - code_repr as u32;
+    let p2 = solve_p2(runes, mem);
+
+    (p1, p2)
+}
+
+fn solve_p2(runes: Vec<Rune>, mem_before: u32) -> u32 {
+    let mut output = 0;
+    for rune in &runes {
+        match rune {
+            Rune::Lit('"') => output += 2,
+            Rune::Esc(_) => output += 4,
+            Rune::Hex(..) => output += 5,
+            Rune::Lit(_) => output += 1,
+        }
+    }
+
+    output += 2; //quotes
+    output - mem_before
 }
 
 #[derive(Debug)]
@@ -61,17 +94,13 @@ impl Rune {
 }
 
 #[cfg(test)]
-mod test {
-
+mod tests {
     use super::*;
 
-    const PROVIDED: &str = r#"""
-"abc"
-"aaa\"aaa"
-"\x27"#;
+    const PROVIDED: &str = r#""\x27""#;
 
     #[test]
-    fn provided_p1() {
-        assert_eq!(5, solve_p1("\"\\x27\""));
+    fn test_solver_p2() {
+        println!("{:?}", solve(PROVIDED));
     }
 }
