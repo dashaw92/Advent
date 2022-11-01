@@ -11,7 +11,7 @@ fn main() {
 fn solve_p1(input: i64, iters: i32) -> usize {
     let mut work = input.to_string();
 
-    for i in 0..iters {
+    for _ in 0..iters {
         let mut buf = String::new();
         let chars: Vec<char> = work.chars().collect();
 
@@ -31,7 +31,6 @@ fn solve_p1(input: i64, iters: i32) -> usize {
             idx += run;
         }
 
-        //println!("{i:2}) {work} -> {buf}");
         work = buf;
     }
 
