@@ -3,7 +3,10 @@ use std::{collections::HashSet, error::Error};
 fn main() -> Result<(), Box<dyn Error>> {
     let input = std::env::args().nth(1).unwrap();
 
+    let p1 = solve_p1(&input);
     println!("Part 1: {}", solve_p1(&input));
+    let next = inc_pw(p1);
+    println!("Part 2: {}", solve_p1(&next));
     Ok(())
 }
 
