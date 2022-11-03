@@ -11,96 +11,64 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn to_runes(input: impl AsRef<str>) -> Vec<Rune> {
-    let mut runes = Vec::new();
-    let chars: Vec<char> = input.as_ref().chars().collect();
-    let mut i = 0;
-    while i < chars.len() {
-        let current = chars[i];
-        //assume \n is not considered part of this
-        if current == '\n' {
-            i += 1;
-            continue;
-        }
-
-        if i + 4 < chars.len() && current == '\\' && chars[i + 1] == 'x' {
-            let hex = &chars[i + 2..=i + 3];
-            runes.push(Rune::Hex(hex[0], hex[1]));
-            i += 4;
-        } else if i + 2 < chars.len() && chars[i] == '\\' {
-            runes.push(Rune::Esc(chars[i + 1]));
-            i += 2;
-        } else {
-            runes.push(Rune::Lit(current));
-            i += 1;
-        }
-    }
-
-    runes
-}
-
-fn count(runes: &[Rune]) -> (u32, u32) {
-    let mem = runes
-        .iter()
-        .fold(0, |acc, rune| acc + rune.mem_repr_count());
-    let code_repr = runes
-        .iter()
-        .filter(|rune| !matches!(rune, Rune::Lit('"')))
-        .count() as u32;
-
-    (mem, code_repr)
-}
-
 fn solve(input: impl AsRef<str>) -> (u32, u32) {
-    let runes = to_runes(input);
+    let mut code_p1 = 0;
+    let mut code_p2 = 0;
+    let mut mem = 0;
+    for line in input.as_ref().lines() {
+        let mut tmp = line.len() + 2;
+        code_p1 += line.len();
+        let chars: Vec<char> = line.chars().collect();
 
-    let (mem, code_repr) = count(&runes);
-    let p1 = mem - code_repr as u32;
-    let p2 = solve_p2(runes, mem);
-
-    (p1, p2)
-}
-
-fn solve_p2(runes: Vec<Rune>, mem_before: u32) -> u32 {
-    let mut output = 0;
-    for rune in &runes {
-        match rune {
-            Rune::Lit('"') => output += 2,
-            Rune::Esc(_) => output += 4,
-            Rune::Hex(..) => output += 5,
-            Rune::Lit(_) => output += 1,
+        let mut idx = 0;
+        while idx < chars.len() {
+            let c = chars[idx];
+            match c {
+                '\\' if chars[idx + 1] == 'x' => {
+                    mem += 1;
+                    tmp += 1;
+                    idx += 4;
+                }
+                '\\' => {
+                    mem += 1;
+                    idx += 2;
+                    tmp += 2;
+                }
+                '"' => {
+                    mem += 1;
+                    idx += 1;
+                    tmp += 1;
+                }
+                _ => {
+                    mem += 1;
+                    idx += 1;
+                }
+            }
         }
+
+        mem -= 2; //start and end quotes
+        code_p2 += tmp;
     }
 
-    output += 2; //quotes
-    output - mem_before
-}
+    let p1 = code_p1 - mem;
+    let p2 = code_p2 - code_p1;
 
-#[derive(Debug)]
-enum Rune {
-    Lit(char),
-    Hex(char, char),
-    Esc(char),
-}
-
-impl Rune {
-    fn mem_repr_count(&self) -> u32 {
-        match self {
-            Self::Lit(..) => 1,
-            Self::Hex(..) => 4,
-            Self::Esc(..) => 2,
-        }
-    }
+    (p1 as u32, p2 as u32)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const PROVIDED: &str = r#""\x27""#;
+    const PROVIDED: &str = r#""\x27"
+""
+"abc"
+"aaa\"aaa""#;
 
     #[test]
-    fn test_solver_p2() {
-        println!("{:?}", solve(PROVIDED));
+    fn test_solver() {
+        let (p1, p2) = solve(PROVIDED);
+        assert_eq!(p1, 12);
+        assert_eq!(p2, 19);
     }
 }
