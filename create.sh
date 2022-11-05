@@ -32,4 +32,7 @@ cargo new --bin "day$day"
 cd ..
 echo "Writing template to main.rs"
 cat "template.rs" > "$year/day$day/src/main.rs"
+cd "$year/day$day"
+echo "Adding dependency to aoc in Cargo.toml..."
+cargo add --path ../../aoc
 echo "Done."
