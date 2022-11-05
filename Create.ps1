@@ -28,4 +28,6 @@ Set-Location ..
 Write-Host "Writing template to main.rs"
 Get-Content "template.rs" > "$year\day$day\src\main.rs"
 Set-Location "$year\day$day"
+Write-Host "Adding dependency to aoc in Cargo.toml..."
+cargo add --path ../../aoc
 Write-Host "Done."

@@ -1,19 +1,19 @@
+use aoc::Plumb;
+
 use std::error::Error;
 use std::fs::read_to_string;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    println!("Part 1: {}", solve_p1(&input));
+    let (p1, p2) = solve(&input);
+    println!("Part 1: {}", p1);
     Ok(())
 }
 
-fn solve_p1(input: impl AsRef<str>) -> usize {
-    0
-}
-
-fn solve_p2(input: impl  AsRef<str>) -> usize {
-    0
+fn solve(input: impl AsRef<str>) -> (usize, usize) {
+    let input: Vec<i32> = input.plumb();
+    (0, 0)
 }
 
 #[cfg(test)]
@@ -28,8 +28,4 @@ mod test {
         assert_eq!(0, solve_p1(PROVIDED));
     }
 
-    #[test]
-    fn provided_p2() {
-        assert_eq!(0, solve_p2(PROVIDED));
-    }
 }
