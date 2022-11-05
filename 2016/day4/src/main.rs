@@ -5,12 +5,18 @@ use std::str::FromStr;
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    let sum_sectors = input
+    let mut rooms: Vec<Room> = input
         .lines()
         .filter_map(|s| s.parse().ok())
         .filter(Room::is_valid)
-        .fold(0, |acc, room| acc + room.sector);
+        .collect();
+
+    let sum_sectors = rooms.iter().fold(0, |acc, r| acc + r.sector);
     println!("P1: {sum_sectors}");
+
+    rooms.iter_mut().for_each(Room::shift_name);
+    let north_pole_storage = rooms.iter().find(|r| r.name.contains("northpole")).unwrap();
+    println!("P2: {}", north_pole_storage.sector);
     Ok(())
 }
 
@@ -25,7 +31,12 @@ impl FromStr for Room {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let name: String = s.split('-').filter(|p| !p.contains('[')).collect();
+        let name: String = s
+            .split('-')
+            .filter(|p| !p.contains('['))
+            .fold(String::new(), |acc, w| format!("{acc}-{w}"));
+        let name = name.strip_prefix('-').map(ToOwned::to_owned).unwrap();
+
         let (sector, checksum) = s.rsplit_once('-').unwrap().1.split_once('[').unwrap();
         let sector = sector.parse().unwrap();
         let checksum_s = checksum.strip_suffix(']').unwrap();
@@ -61,7 +72,10 @@ impl Room {
         }
 
         let mut freq = Vec::new();
-        self.name.chars().for_each(|c| update(&mut freq, c));
+        self.name
+            .chars()
+            .filter(|&c| c != '-')
+            .for_each(|c| update(&mut freq, c));
         freq.sort_by(|a, b| {
             //Check if the frequency for these chars are the same.
             //If so, sort by alphabetic ordering
@@ -81,6 +95,22 @@ impl Room {
             .zip(self.checksum.iter())
             .all(|(c1, c2)| c1 == *c2)
     }
+
+    fn shift_name(&mut self) {
+        let name: String = self.name.chars().map(|c| rotate(c, self.sector)).collect();
+        self.name = name;
+    }
+}
+
+fn rotate(c: char, amt: usize) -> char {
+    if c == '-' {
+        return ' ';
+    }
+    let idx = c as u8 - b'a';
+    let shifted = idx as usize + amt;
+    let modulo = shifted % 26;
+    let offset = modulo as u8 + b'a';
+    offset as char
 }
 
 #[cfg(test)]
@@ -98,8 +128,15 @@ mod tests {
 
         for pair in rooms {
             let room: Room = pair.0.parse().unwrap();
-            println!("{} {room:?}", pair.0);
             assert_eq!(room.is_valid(), pair.1);
         }
+    }
+
+    #[test]
+    fn test_rotate() {
+        let mut r = Room::from_str("qzmt-zixmtkozy-ivhz-343[abcde]").unwrap();
+        r.shift_name();
+        println!("{}", r.name);
+        assert_eq!('b', rotate('a', 27));
     }
 }
