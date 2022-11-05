@@ -7,15 +7,17 @@ use std::str::FromStr;
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    let (p1, _p2) = solve(&input);
+    let (p1, p2) = solve(&input);
     println!("Part 1: {}", p1);
+    println!("Part 2: {}", p2);
     Ok(())
 }
 
 fn solve(input: impl AsRef<str>) -> (usize, usize) {
     let input: Vec<IP> = input.plumb();
-    let p1 = input.iter().filter(|ip| ip.is_valid()).count();
-    (p1, 0)
+    let p1 = input.iter().filter(|ip| ip.is_abba()).count();
+    let p2 = input.iter().filter(|ip| ip.is_ssl()).count();
+    (p1, p2)
 }
 
 //abba[mnop]qrst
@@ -68,25 +70,53 @@ impl FromStr for IP {
 }
 
 impl IP {
-    fn is_valid(&self) -> bool {
-        let has_pair_outside = pair_check(&self.outside);
-        let has_pair_inside = pair_check(&self.inside);
+    fn is_abba(&self) -> bool {
+        let has_pair_outside = pair_check(&self.outside, 4, is_abba);
+        let has_pair_inside = pair_check(&self.inside, 4, is_abba);
 
         has_pair_outside && !has_pair_inside
     }
+
+    fn is_ssl(&self) -> bool {
+        //has ABA in outside
+        //has BAB in inside
+        for pair in self.outside.iter().flat_map(find_aba) {
+            if self.inside.iter().any(|word| has_bab(word, pair)) {
+                return true;
+            }
+        }
+
+        false
+    }
 }
 
-fn pair_check(v: &[String]) -> bool {
+fn pair_check<F>(v: &[String], w_size: usize, fun: F) -> bool
+where
+    F: Fn(&[u8]) -> bool,
+{
     v.iter()
         .map(String::as_bytes)
-        .flat_map(|b| b.windows(4))
-        .any(is_pair)
+        .flat_map(|b| b.windows(w_size))
+        .any(fun)
 }
 
-fn is_pair(sl: &[u8]) -> bool {
+fn is_abba(sl: &[u8]) -> bool {
     sl.len() >= 4 && //first a length check
     sl[0] == sl[3] && sl[1] == sl[2] && //xyyx
     sl[0] != sl[1] //disallow xxxx
+}
+
+fn find_aba(sl: &String) -> impl Iterator<Item = (u8, u8)> + '_ {
+    sl.as_bytes()
+        .windows(3)
+        .filter(|sl| sl[0] == sl[2] && sl[0] != sl[1])
+        .map(|sl| (sl[0], sl[1]))
+}
+
+fn has_bab(sl: &String, (a, b): (u8, u8)) -> bool {
+    sl.as_bytes()
+        .windows(3)
+        .any(|sl| sl[0] == b && sl[0] == sl[2] && sl[1] == a)
 }
 
 #[cfg(test)]
@@ -94,11 +124,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
+    fn test_abba() {
         let ip: IP = "abba[mnop]qrst".parse().unwrap();
-        assert!(ip.is_valid());
+        assert!(ip.is_abba());
 
         let ip: IP = "abcd[bddb]xyyx".parse().unwrap();
-        assert!(!ip.is_valid());
+        assert!(!ip.is_abba());
+    }
+
+    #[test]
+    fn test_ssl() {
+        // let ip: IP = "aba[bab]xyz".parse().unwrap();
+        // assert!(ip.is_ssl());
+
+        // let ip: IP = "aaa[kek]eke".parse().unwrap();
+        // assert!(ip.is_ssl());
+
+        let ip: IP = "zazbz[bzb]cdb".parse().unwrap();
+        assert!(ip.is_ssl());
+
+        // let ip: IP = "xyx[xyx]xyx".parse().unwrap();
+        // assert!(!ip.is_ssl());
     }
 }
