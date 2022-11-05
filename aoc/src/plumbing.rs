@@ -4,9 +4,9 @@ pub trait Plumb<T> {
     fn plumb(&self) -> T;
 }
 
-impl<T, E, U> Plumb<Vec<T>> for U
+impl<T, U> Plumb<Vec<T>> for U
 where
-    T: FromStr<Err = E>,
+    T: FromStr,
     U: AsRef<str>,
 {
     fn plumb(&self) -> Vec<T> {
