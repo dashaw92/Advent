@@ -18,7 +18,7 @@ fn solve_p1(input: impl AsRef<str>) -> String {
         .map(compute)
         .map(|d| format!("{d:x}"))
         .filter(|digest| digest.starts_with("00000"))
-        .inspect(|hex| println!("p1: found hash {hex}"))
+        .inspect(|hex| println!("p1: Found hash {hex}"))
         .map(|slice| slice.chars().nth(5).unwrap())
         .take(8)
         .collect()
@@ -30,7 +30,7 @@ fn solve_p2(input: impl AsRef<str>) -> String {
     let mut code: [u8; 8] = [b'-'; 8];
 
     for i in 0.. {
-        if found == 8 {
+        if found == code.len() {
             break;
         }
 
@@ -43,10 +43,11 @@ fn solve_p2(input: impl AsRef<str>) -> String {
             //pos already found, ignore this hash
             let pos = match pos {
                 Some(p) => {
-                    if p > 7 || code[p as usize] != b'-' {
+                    let p = p as usize;
+                    if p > 7 || code[p] != b'-' {
                         continue;
                     }
-                    p as usize
+                    p
                 }
                 None => continue,
             };
@@ -54,7 +55,10 @@ fn solve_p2(input: impl AsRef<str>) -> String {
             let val = hex.chars().nth(6).unwrap() as u8;
             code[pos] = val;
             found += 1;
-            println!("p2::[{i}] Found {hex}! Remaining: {}", code.len() - found);
+            println!(
+                "p2::[{i:010}] Found {hex}! Remaining: {}",
+                code.len() - found
+            );
         }
     }
 
