@@ -8,19 +8,19 @@ use std::str::FromStr;
 fn main() -> Result<(), Box<dyn Error>> {
     let input = read_to_string("input.txt")?;
 
-    let (p1, p2) = solve(&input);
+    let p1 = solve(&input);
     println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    println!("Part 2: Code has been printed to screen, read it.");
     Ok(())
 }
 
-fn solve(input: impl AsRef<str>) -> (usize, usize) {
+fn solve(input: impl AsRef<str>) -> usize {
     let mut g: Grid<51, 6> = Grid::new();
     let input: Vec<Cmd> = input.plumb();
 
     g.render(&input);
     let p1 = g.grid.iter().filter(|&b| *b).count();
-    (p1, 0)
+    p1
 }
 
 enum Cmd {
@@ -41,7 +41,7 @@ impl<const W: usize, const H: usize> fmt::Display for Grid<W, H> {
                     f,
                     "{}",
                     match b {
-                        true => "#",
+                        true => "█",
                         false => ".",
                     }
                 );
