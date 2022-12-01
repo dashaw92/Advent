@@ -14,9 +14,9 @@ fn solve(input: impl AsRef<str>) -> (usize, usize) {
     let mut sums: Vec<usize> = input
         .as_ref()
         .split("\n\n")
-        .map(|ls| ls.lines())
+        .map(str::lines)
         .map(|ls| ls.filter_map(|num| num.parse::<usize>().ok()))
-        .map(|cs| cs.sum())
+        .map(Iterator::sum)
         .collect();
 
     sums.sort_by(|a, b| b.cmp(a));
