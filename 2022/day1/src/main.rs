@@ -11,26 +11,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn solve(input: impl AsRef<str>) -> (usize, usize) {
-    let inp = input.as_ref();
-    let mut sums = Vec::new();
-    let mut current = 0;
-    for line in inp.lines() {
-        if line.is_empty() {
-            sums.push(current);
-            current = 0;
-            continue;
-        }
+    let mut sums: Vec<usize> = input
+        .as_ref()
+        .split("\n\n")
+        .map(|ls| ls.lines())
+        .map(|ls| ls.filter_map(|num| num.parse::<usize>().ok()))
+        .map(|cs| cs.sum())
+        .collect();
 
-        let calories: usize = line.parse().unwrap();
-        current += calories;
-    }
-
-    if current != 0 {
-        sums.push(current);
-    }
-
-    let p1 = *sums.iter().max().unwrap();
     sums.sort_by(|a, b| b.cmp(a));
+    let p1 = sums[0];
     let p2 = sums[0..3].iter().sum();
 
     (p1, p2)
