@@ -6,6 +6,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (p1, p2) = solve(&input);
     println!("Part 1: {}", p1);
+    println!("Part 2: {}", p2);
     Ok(())
 }
 
@@ -24,7 +25,15 @@ fn solve(input: impl AsRef<str>) -> (usize, usize) {
         current += calories;
     }
 
-    (sums.into_iter().max().unwrap(), 0)
+    if current != 0 {
+        sums.push(current);
+    }
+
+    let p1 = *sums.iter().max().unwrap();
+    sums.sort_by(|a, b| b.cmp(a));
+    let p2 = sums[0..3].iter().sum();
+
+    (p1, p2)
 }
 
 #[cfg(test)]
@@ -49,6 +58,6 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!((24000, 0), solve(PROVIDED));
+        assert_eq!((24000, 45000), solve(PROVIDED));
     }
 }
