@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (p1, p2) = solve(&input);
     println!("Part 1: {}", p1);
+    println!("Part 2: {}", p2);
     Ok(())
 }
 
@@ -25,7 +26,6 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!(0, solve_p1(PROVIDED));
+        assert_eq!((0, 0), solve(PROVIDED));
     }
-
 }
