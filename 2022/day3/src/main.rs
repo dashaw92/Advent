@@ -18,11 +18,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn solve(input: impl AsRef<str>) -> (usize, usize) {
     let input: Vec<Sack> = input.plumb();
-    let p1 = input.into_iter().map(union).sum();
-    (p1, 0)
+    let p1 = input.iter().map(union).sum();
+    let p2 = input.chunks(3).map(find_badge).map(|c| priority(&c)).sum();
+
+    (p1, p2)
 }
 
 struct Sack {
+    all: String,
     fst: M,
     snd: M,
 }
@@ -37,20 +40,33 @@ impl FromStr for Sack {
         let (fst, snd) = s.split_at(mid);
         let (fst, snd) = (count_items(fst), count_items(snd));
 
-        Ok(Sack { fst, snd })
+        Ok(Sack {
+            all: s.to_string(),
+            fst,
+            snd,
+        })
     }
 }
 
-fn count_items(s: &str) -> M {
+fn count_items<S: AsRef<str>>(s: S) -> M {
     let mut m = M::new();
-    s.chars().for_each(|c| {
+    s.as_ref().chars().for_each(|c| {
         m.insert(c);
     });
     m
 }
 
-fn union(s: Sack) -> usize {
+fn union(s: &Sack) -> usize {
     s.fst.intersection(&s.snd).map(priority).sum()
+}
+
+fn find_badge(ss: &[Sack]) -> char {
+    let sets: Vec<M> = ss.iter().map(|sack| &sack.all).map(count_items).collect();
+
+    *sets[0]
+        .intersection(&sets[1])
+        .find(|c| sets[2].contains(c))
+        .unwrap()
 }
 
 fn priority(item: &char) -> usize {
@@ -75,6 +91,6 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
 
     #[test]
     fn provided_p1() {
-        assert_eq!((157, 0), solve(PROVIDED));
+        assert_eq!((157, 70), solve(PROVIDED));
     }
 }
