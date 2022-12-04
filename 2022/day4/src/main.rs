@@ -17,8 +17,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn solve(input: impl AsRef<str>) -> (usize, usize) {
     let input: Vec<Job> = input.plumb();
-    let p1 = input.iter().filter(|j| j.has_overlap()).count();
-    (p1, 0)
+    let p1 = input.iter().filter(|j| j.is_complete_overlap()).count();
+    let p2 = input.iter().filter(|j| j.has_any_overlap()).count();
+    (p1, p2)
 }
 
 #[derive(Debug)]
@@ -28,11 +29,18 @@ struct Job {
 }
 
 impl Job {
-    fn has_overlap(&self) -> bool {
+    fn is_complete_overlap(&self) -> bool {
         let fst_contains_snd = self.fst.0 <= self.snd.0 && self.fst.1 >= self.snd.1;
         let snd_contains_fst = self.snd.0 <= self.fst.0 && self.snd.1 >= self.fst.1;
 
         fst_contains_snd || snd_contains_fst
+    }
+
+    fn has_any_overlap(&self) -> bool {
+        let mut r_fst = self.fst.0..=self.fst.1;
+        let r_snd = self.snd.0..=self.snd.1;
+
+        r_fst.any(|s| r_snd.contains(&s))
     }
 }
 
@@ -70,6 +78,6 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!((2, 0), solve(PROVIDED));
+        assert_eq!((2, 4), solve(PROVIDED));
     }
 }
