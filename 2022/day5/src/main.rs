@@ -14,23 +14,27 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn solve(input: impl AsRef<str>) -> (String, usize) {
+fn solve(input: impl AsRef<str>) -> (String, String) {
     let stacks: Vec<&str> = input
         .as_ref()
         .lines()
         .take_while(|line| !line.is_empty())
         .collect();
-    let mut dock = Dock::new(stacks);
+    let mut crane9000 = Dock::new(&stacks);
+    let mut crane9001 = Dock::new(&stacks);
 
-    input
+    let moves: Vec<Move> = input
         .as_ref()
         .lines()
         .skip_while(|line| !line.is_empty())
         .skip(1)
         .filter_map(|mv| mv.parse::<Move>().ok())
-        .for_each(|mv| dock.run(&mv));
+        .collect();
 
-    (dock.get_p1_output(), 0)
+    let p1 = crane9000.run_p1(&moves);
+    let p2 = crane9001.run_p2(&moves);
+
+    (p1, p2)
 }
 
 #[cfg(test)]
@@ -50,6 +54,6 @@ move 1 from 1 to 2";
 
     #[test]
     fn provided_p1() {
-        assert_eq!(("CMZ".into(), 0), solve(PROVIDED));
+        assert_eq!(("CMZ".into(), "MCD".into()), solve(PROVIDED));
     }
 }

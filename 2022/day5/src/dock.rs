@@ -11,7 +11,7 @@ pub(crate) struct Dock {
 }
 
 impl Dock {
-    pub(crate) fn new(stacks: Vec<&str>) -> Self {
+    pub(crate) fn new(stacks: &[&str]) -> Self {
         let mut dock_stacks: M = stacks
             .last()
             .map(|s| s.split_ascii_whitespace())
@@ -39,11 +39,33 @@ impl Dock {
         }
     }
 
-    pub(crate) fn run(&mut self, mv: &Move) {
-        (0..mv.amt).for_each(|_| {
-            let it = self.stacks.get_mut(&mv.src).unwrap().pop_back().unwrap();
-            self.stacks.get_mut(&mv.dst).unwrap().push_back(it);
-        })
+    pub(crate) fn run_p1(&mut self, mvs: &[Move]) -> String {
+        mvs.iter().for_each(|mv| {
+            (0..mv.amt).for_each(|_| {
+                let it = self.stacks.get_mut(&mv.src).unwrap().pop_back().unwrap();
+                self.stacks.get_mut(&mv.dst).unwrap().push_back(it);
+            });
+        });
+
+        self.get_p1_output()
+    }
+
+    pub(crate) fn run_p2(&mut self, mvs: &[Move]) -> String {
+        mvs.iter().for_each(|mv| {
+            let mut stack: Vec<char> = Vec::with_capacity(mv.amt);
+
+            (0..mv.amt).for_each(|_| {
+                let it = self.stacks.get_mut(&mv.src).unwrap().pop_back().unwrap();
+                stack.push(it);
+            });
+
+            stack.reverse();
+            stack.into_iter().for_each(|it| {
+                self.stacks.get_mut(&mv.dst).unwrap().push_back(it);
+            });
+        });
+
+        self.get_p1_output()
     }
 
     pub(crate) fn get_p1_output(&self) -> String {
