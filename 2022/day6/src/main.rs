@@ -33,7 +33,7 @@ fn is_marker(seq: &[char], length: usize) -> bool {
         .map(|&ch| (ch as u8) - b'a')
         .for_each(|bit| bits |= 1 << bit);
 
-    // println!("{seq:?} {bits:032b}");
+    println!("{seq:?} {bits:032b}");
     bits.count_ones() == length as u32
 }
 
