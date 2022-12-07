@@ -28,10 +28,10 @@ fn find(chars: &[char], length: usize) -> usize {
 }
 
 fn is_marker(seq: &[char], length: usize) -> bool {
-    let mut bits: u32 = 0;
-    seq.iter()
+    let bits: u32 = seq
+        .iter()
         .map(|&ch| (ch as u8) - b'a')
-        .for_each(|bit| bits |= 1 << bit);
+        .fold(0, |bits, bit| bits | 1 << bit);
 
     println!("{seq:?} {bits:032b}");
     bits.count_ones() == length as u32
