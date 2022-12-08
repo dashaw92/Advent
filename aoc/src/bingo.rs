@@ -19,7 +19,7 @@ impl BingoCard {
 
     pub fn slot(&self, x: usize, y: usize) -> Option<&Slot> {
         if x > self.dims.0 || y > self.dims.1 {
-            return None
+            return None;
         }
 
         Some(&self.board[x + y * self.dims.0])
@@ -27,7 +27,7 @@ impl BingoCard {
 
     pub fn row(&self, y: usize) -> Option<&[Slot]> {
         if y > self.dims.1 {
-            return None
+            return None;
         }
 
         let idx = y * self.dims.0;
@@ -36,7 +36,7 @@ impl BingoCard {
 
     pub fn column(&self, x: usize) -> Option<Vec<Slot>> {
         if x > self.dims.0 {
-            return None
+            return None;
         }
 
         let mut slots = Vec::new();
@@ -53,12 +53,12 @@ impl BingoCard {
         for idx in 0..self.dims.0 {
             let row = self.row(idx).unwrap();
             if row.iter().all(Slot::is_marked) {
-                return true
+                return true;
             }
 
             let column = self.column(idx).unwrap();
             if column.iter().all(Slot::is_marked) {
-                return true
+                return true;
             }
         }
 
@@ -70,7 +70,7 @@ impl BingoCard {
             match self.board[idx] {
                 Slot::Unmarked(val) if val == num => {
                     self.board[idx] = Slot::Marked(val);
-                },
+                }
                 _ => (),
             }
         }
@@ -81,7 +81,8 @@ impl BingoCard {
             .iter()
             .filter(|slot| !slot.is_marked())
             .map(|slot| **slot as usize)
-            .sum::<usize>() * last_draw.into()
+            .sum::<usize>()
+            * last_draw.into()
     }
 }
 
@@ -90,7 +91,12 @@ impl Display for BingoCard {
         let mut buffer = String::new();
         let mut line = String::new();
         for idx in 0..self.dims.0 * self.dims.1 {
-            line.push_str(&format!("{:>3}", self.slot(idx % self.dims.0, idx / self.dims.1).unwrap().to_string()));
+            line.push_str(&format!(
+                "{:>3}",
+                self.slot(idx % self.dims.0, idx / self.dims.1)
+                    .unwrap()
+                    .to_string()
+            ));
             line += " ";
 
             if idx % self.dims.0 == self.dims.0 - 1 {
@@ -111,11 +117,7 @@ pub enum Slot {
 }
 impl Slot {
     pub fn is_marked(&self) -> bool {
-        if let Self::Marked(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Marked(_))
     }
 }
 impl From<&u8> for Slot {
@@ -125,10 +127,14 @@ impl From<&u8> for Slot {
 }
 impl Display for Slot {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            Self::Marked(val) => format!("*{}", val),
-            Self::Unmarked(val) => format!("{}", val),
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Marked(val) => format!("*{}", val),
+                Self::Unmarked(val) => format!("{}", val),
+            }
+        )
     }
 }
 impl Deref for Slot {
@@ -136,8 +142,8 @@ impl Deref for Slot {
 
     fn deref(&self) -> &Self::Target {
         match self {
-            Self::Marked(val) => &val,
-            Self::Unmarked(val) => &val,
+            Self::Marked(val) => val,
+            Self::Unmarked(val) => val,
         }
     }
 }
