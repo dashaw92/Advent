@@ -53,6 +53,17 @@ impl<T> Grid<T> {
             Some(&mut self.inner[y * self.width + x])
         }
     }
+
+    pub fn to_xy(&self, idx: usize) -> (usize, usize) {
+        let x = idx % self.width;
+        let y = idx / self.width;
+
+        (x, y)
+    }
+
+    pub fn to_idx(&self, (x, y): (usize, usize)) -> usize {
+        y * self.width + x
+    }
 }
 
 impl<T> Index<(usize, usize)> for Grid<T> {
