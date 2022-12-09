@@ -64,19 +64,25 @@ impl<T> Grid<T> {
     pub fn to_idx(&self, (x, y): (usize, usize)) -> usize {
         y * self.width + x
     }
+
+    pub fn size(&self) -> (usize, usize) {
+        (self.width, self.height)
+    }
 }
 
 impl<T> Index<(usize, usize)> for Grid<T> {
     type Output = T;
 
     fn index(&self, (x, y): (usize, usize)) -> &Self::Output {
-        self.index(x, y).expect("Position out of bounds")
+        self.index(x, y)
+            .unwrap_or_else(|| panic!("Position ({}x{}) out of bounds", x, y))
     }
 }
 
 impl<T> IndexMut<(usize, usize)> for Grid<T> {
     fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Output {
-        self.index_mut(x, y).expect("Position out of bounds")
+        self.index_mut(x, y)
+            .unwrap_or_else(|| panic!("Position ({}, {}) out of bounds", x, y))
     }
 }
 
