@@ -16,13 +16,18 @@ fn solve(input: impl AsRef<str>) -> (usize, usize) {
     let g = get_grid(input);
     let (w, h) = g.size();
 
-    println!("{g}");
     let p1 = (0..w * h)
         .map(|idx| g.to_xy(idx))
         .filter(|&pos| is_vis(&g, pos))
         .count();
 
-    (p1, 0)
+    let p2 = (0..w * h)
+        .map(|idx| g.to_xy(idx))
+        .map(|pos| scenic_score(&g, pos))
+        .max()
+        .unwrap();
+
+    (p1, p2)
 }
 
 fn is_vis(g: &Grid<u32>, (x, y): (usize, usize)) -> bool {
@@ -32,13 +37,41 @@ fn is_vis(g: &Grid<u32>, (x, y): (usize, usize)) -> bool {
         return true;
     }
 
-    let left = (0..x).map(|nx| g[(nx, y)]).all(|tree| tree < elem);
+    let left = (0..x).rev().map(|nx| g[(nx, y)]).all(|tree| tree < elem);
     let right = (x + 1..w).map(|nx| g[(nx, y)]).all(|tree| tree < elem);
 
-    let up = (0..y).map(|ny| g[(x, ny)]).all(|tree| tree < elem);
+    let up = (0..y).rev().map(|ny| g[(x, ny)]).all(|tree| tree < elem);
     let down = (y + 1..h).map(|ny| g[(x, ny)]).all(|tree| tree < elem);
 
     left || right || up || down
+}
+
+fn scenic_score(g: &Grid<u32>, (x, y): (usize, usize)) -> usize {
+    let (w, h) = g.size();
+    let elem = g[(x, y)];
+    if x == 0 || y == 0 || x == w - 1 || y == h - 1 {
+        return 0;
+    }
+
+    fn p2(it: impl Iterator<Item = u32>, test: u32) -> usize {
+        let mut count = 0;
+        for tree in it {
+            count += 1;
+            if tree >= test {
+                break;
+            }
+        }
+
+        count
+    }
+
+    let left = p2((0..x).rev().map(|nx| g[(nx, y)]), elem);
+    let right = p2((x + 1..w).map(|nx| g[(nx, y)]), elem);
+
+    let up = p2((0..y).rev().map(|ny| g[(x, ny)]), elem);
+    let down = p2((y + 1..h).map(|ny| g[(x, ny)]), elem);
+
+    left * right * up * down
 }
 
 fn get_grid(input: impl AsRef<str>) -> Grid<u32> {
@@ -62,6 +95,6 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!((21, 0), solve(PROVIDED));
+        assert_eq!((21, 8), solve(PROVIDED));
     }
 }
