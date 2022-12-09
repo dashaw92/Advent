@@ -1,5 +1,5 @@
 use core::fmt;
-use std::ops::{Add, Sub};
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Copy, Clone)]
 pub struct Pos<T: Copy>(T, T);
@@ -62,6 +62,26 @@ where
 
     fn add(self, rhs: Self) -> Self::Output {
         Pos::add(&self, &rhs)
+    }
+}
+
+impl<T> AddAssign for Pos<T>
+where
+    T: AddAssign + Copy,
+{
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+        self.1 += rhs.1;
+    }
+}
+
+impl<T> SubAssign for Pos<T>
+where
+    T: SubAssign + Copy,
+{
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
+        self.1 -= rhs.1;
     }
 }
 
