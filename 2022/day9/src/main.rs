@@ -18,14 +18,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn solve(input: impl AsRef<str>) -> (usize, usize) {
     let mut moves: Vec<Delta> = input.plumb();
     let mut rope = Rope::default();
+
+    let mut p2_ropes = vec![Rope::default(); 10];
+
     let mut tail_locs = HashSet::new();
+    let mut tail_p2 = HashSet::new();
 
     for d in &mut moves {
         while d.1 != 0 {
             grid(&rope);
-            do_move(&mut rope.head, d);
+            do_move(&mut rope.head, &mut p2_ropes, d);
             update_tail(&mut rope);
+
             tail_locs.insert(rope.tail);
+            tail_p2.insert(p2_ropes.last().unwrap().tail);
         }
     }
 
@@ -33,13 +39,16 @@ fn solve(input: impl AsRef<str>) -> (usize, usize) {
     (p1, 0)
 }
 
-fn do_move(pos: &mut Pos<i32>, mv: &mut Delta) {
-    match mv.0 {
-        Dir::U => *pos -= (0, 1).into(),
-        Dir::D => *pos += (0, 1).into(),
-        Dir::L => *pos -= (1, 0).into(),
-        Dir::R => *pos += (1, 0).into(),
-    }
+fn do_move(pos: &mut Pos<i32>, p2_ropes: &mut [Rope], mv: &mut Delta) {
+    let delta = match mv.0 {
+        Dir::U => (0, -1).into(),
+        Dir::D => (0, 1).into(),
+        Dir::L => (-1, 0).into(),
+        Dir::R => (1, 0).into(),
+    };
+
+    *pos += delta;
+    p2_ropes[0].head += delta;
 
     mv.1 -= 1;
     #[cfg(test)]
@@ -90,7 +99,7 @@ fn grid(rope: &Rope) {
 #[cfg(not(test))]
 fn grid(_: &Rope) {}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Rope {
     head: Pos<i32>,
     tail: Pos<i32>,
