@@ -16,30 +16,30 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn solve(input: impl AsRef<str>) -> (usize, usize) {
+    let p1 = run(&input, 2);
+    let p2 = run(&input, 10);
+    (p1, p2)
+}
+
+fn run(input: impl AsRef<str>, size: usize) -> usize {
     let mut moves: Vec<Delta> = input.plumb();
-    let mut rope = Rope::default();
-
-    let mut p2_ropes = vec![Rope::default(); 10];
-
     let mut tail_locs = HashSet::new();
-    let mut tail_p2 = HashSet::new();
+    let mut rope = Rope::new(size);
 
     for d in &mut moves {
         while d.1 != 0 {
-            grid(&rope);
-            do_move(&mut rope.head, &mut p2_ropes, d);
+            do_move(&mut rope.body[0], d);
             update_tail(&mut rope);
+            d.1 -= 1;
 
-            tail_locs.insert(rope.tail);
-            tail_p2.insert(p2_ropes.last().unwrap().tail);
+            tail_locs.insert(*rope.body.last().unwrap());
         }
     }
 
-    let p1 = tail_locs.len();
-    (p1, 0)
+    tail_locs.len()
 }
 
-fn do_move(pos: &mut Pos<i32>, p2_ropes: &mut [Rope], mv: &mut Delta) {
+fn do_move(pos: &mut Pos<i32>, mv: &Delta) {
     let delta = match mv.0 {
         Dir::U => (0, -1).into(),
         Dir::D => (0, 1).into(),
@@ -48,68 +48,56 @@ fn do_move(pos: &mut Pos<i32>, p2_ropes: &mut [Rope], mv: &mut Delta) {
     };
 
     *pos += delta;
-    p2_ropes[0].head += delta;
-
-    mv.1 -= 1;
-    #[cfg(test)]
-    println!("{mv:?}");
 }
 
 fn update_tail(rope: &mut Rope) {
-    let delta = rope.head - rope.tail;
-    match (delta.x(), delta.y()) {
-        //the head is "touching" the tail
-        (x, y) if x.abs() <= 1 && y.abs() <= 1 => {}
-        //diagonals
-        (1, -2) => rope.tail += (1, -1).into(),
-        (-1, -2) => rope.tail -= (1, 1).into(),
-        (1, 2) => rope.tail += (1, 1).into(),
-        (-1, 2) => rope.tail -= (1, -1).into(),
-
-        (-2, -1) => rope.tail += (-1, -1).into(),
-        (-2, 1) => rope.tail += (-1, 1).into(),
-        (2, -1) => rope.tail += (1, -1).into(),
-        (2, 1) => rope.tail += (1, 1).into(),
-
-        //left right up down
-        (-2, 0) => rope.tail -= (1, 0).into(),
-        (2, 0) => rope.tail += (1, 0).into(),
-        (0, -2) => rope.tail -= (0, 1).into(),
-        (0, 2) => rope.tail += (0, 1).into(),
-        _ => {}
-    }
-}
-
-#[cfg(test)]
-fn grid(rope: &Rope) {
-    let delta = rope.head - rope.tail;
-    let mut grid = vec!['.'; 12 * 10];
-    grid[6 * 10 + 5] = 'H';
-    grid[(6 + delta.y()) as usize * 10 + (5 + delta.x()) as usize] = 'T';
-
-    for y in 0..12 {
-        for x in 0..10 {
-            print!("{}", grid[y * 10 + x]);
+    for i in 0..rope.body.len() {
+        if i + 1 == rope.body.len() {
+            break;
         }
-        println!();
-    }
-    println!("------------------------");
-}
 
-#[cfg(not(test))]
-fn grid(_: &Rope) {}
+        let head = rope.body[i];
+        let tail = &mut rope.body[i + 1];
+
+        let delta = head - *tail;
+        match (delta.x(), delta.y()) {
+            //the head is "touching" the tail
+            (x, y) if x.abs() <= 1 && y.abs() <= 1 => {}
+            //diagonals
+            (1, -2) => *tail += (1, -1).into(),
+            (-1, -2) => *tail -= (1, 1).into(),
+            (1, 2) => *tail += (1, 1).into(),
+            (-1, 2) => *tail -= (1, -1).into(),
+
+            (-2, -1) => *tail += (-1, -1).into(),
+            (-2, 1) => *tail += (-1, 1).into(),
+            (2, -1) => *tail += (1, -1).into(),
+            (2, 1) => *tail += (1, 1).into(),
+
+            (2, -2) => *tail += (1, -1).into(),
+            (2, 2) => *tail += (1, 1).into(),
+            (-2, -2) => *tail += (-1, -1).into(),
+            (-2, 2) => *tail += (-1, 1).into(),
+
+            //left right up down
+            (-2, 0) => *tail -= (1, 0).into(),
+            (2, 0) => *tail += (1, 0).into(),
+            (0, -2) => *tail -= (0, 1).into(),
+            (0, 2) => *tail += (0, 1).into(),
+            _ => {}
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 struct Rope {
-    head: Pos<i32>,
-    tail: Pos<i32>,
+    body: Vec<Pos<i32>>,
 }
 
-impl Default for Rope {
-    fn default() -> Self {
+impl Rope {
+    fn new(size: usize) -> Self {
         Rope {
-            head: (10, 10).into(),
-            tail: (10, 10).into(),
+            body: vec![(0, 0).into(); size],
         }
     }
 }
@@ -158,8 +146,22 @@ D 1
 L 5
 R 2";
 
+    const PROVIDED_P2: &str = "R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20";
+
     #[test]
     fn provided_p1() {
-        assert_eq!((13, 0), solve(PROVIDED));
+        assert_eq!(13, run(PROVIDED, 2));
+    }
+
+    #[test]
+    fn provided_p2() {
+        assert_eq!(36, run(PROVIDED_P2, 10));
     }
 }
