@@ -28,14 +28,7 @@ fn solve(input: impl AsRef<str>) -> (i32, i32) {
 
     while idx < input.len() {
         let sprite = [x - 1, x, x + 1];
-        if sprite.contains(&((crt.cycle % 40) as i32)) {
-            let pos = crt.cycle as i32 % 40;
-            if (0..40).contains(&pos) {
-                crt.push(true);
-            }
-        } else {
-            crt.push(false);
-        }
+        crt.push(sprite.contains(&((crt.cycle % 40) as i32)));
 
         total += 1;
         crt.cycle();
