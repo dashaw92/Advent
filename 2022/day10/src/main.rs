@@ -10,11 +10,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let (p1, p2) = solve(&input);
     println!("Part 1: {}", p1);
-    println!("Part 2: {}", p2);
+    println!("Part 2: \n{}", p2);
     Ok(())
 }
 
-fn solve(input: impl AsRef<str>) -> (i32, i32) {
+fn solve(input: impl AsRef<str>) -> (i32, String) {
     let input: Vec<Instr> = input.plumb();
     let breakpoints = [20, 60, 100, 140, 180, 220];
 
@@ -53,8 +53,7 @@ fn solve(input: impl AsRef<str>) -> (i32, i32) {
     }
 
     let p1 = strengths.iter().sum();
-    println!("{crt}");
-    (p1, 0)
+    (p1, crt.to_string())
 }
 
 enum Instr {
@@ -114,8 +113,8 @@ impl Display for Crt {
                     f,
                     "{}",
                     match self.pix[y * 40 + x] {
-                        true => "#",
-                        false => ".",
+                        true => "█",
+                        false => " ",
                     }
                 )?;
             }
@@ -134,6 +133,18 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!((13140, 0), solve(PROVIDED));
+        assert_eq!(
+            (
+                13140,
+                "██  ██  ██  ██  ██  ██  ██  ██  ██  ██  
+███   ███   ███   ███   ███   ███   ███ 
+████    ████    ████    ████    ████    
+█████     █████     █████     █████     
+██████      ██████      ██████      ████
+███████       ███████       ███████     \n"
+                    .into()
+            ),
+            solve(PROVIDED)
+        );
     }
 }
