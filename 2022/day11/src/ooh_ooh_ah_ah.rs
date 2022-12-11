@@ -4,6 +4,10 @@ use std::{num::ParseIntError, str::FromStr};
 pub use Op::*;
 pub use Var::*;
 
+//I'm getting sick of having to change types everywhere
+//This alleviates that pain
+pub type Int = u64;
+
 pub fn parse_monkeys(input: impl AsRef<str>, split: &str) -> Vec<Monkey> {
     input
         .as_ref()
@@ -15,7 +19,7 @@ pub fn parse_monkeys(input: impl AsRef<str>, split: &str) -> Vec<Monkey> {
 
 pub struct Monkey {
     pub id: usize,
-    pub items: Vec<i32>,
+    pub items: Vec<Int>,
     pub op: Op,
     pub test: Predicate,
     pub inspected: usize,
@@ -51,7 +55,7 @@ impl FromStr for Monkey {
 }
 
 pub struct Predicate {
-    pub modulo: i32,
+    pub modulo: Int,
     pub pass: usize,
     pub fail: usize,
 }
@@ -73,7 +77,7 @@ pub enum Op {
 }
 
 impl Op {
-    pub fn apply(&self, item: i32) -> i32 {
+    pub fn apply(&self, item: Int) -> Int {
         match self {
             Mul(Prev) => item * item,
             Mul(Const(x)) => item * x,
@@ -85,7 +89,7 @@ impl Op {
 
 //Operation is always "old * <var>"
 pub enum Var {
-    Const(i32),
+    Const(Int),
     Prev, //old * old
           //      ^^^
 }

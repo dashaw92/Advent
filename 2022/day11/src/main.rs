@@ -15,25 +15,27 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn solve(input: impl AsRef<str>, split: &str) -> (usize, usize) {
-    let mut monkeys = parse_monkeys(input, split);
+    let mut monkeys = parse_monkeys(&input, split);
+    let mut monkeys_p2 = parse_monkeys(&input, split);
 
-    let p1 = run(&mut monkeys, 20);
-    (p1, 0)
+    let lcm: Int = monkeys.iter().map(|monkey| monkey.test.modulo).product();
+    let p1 = run(&mut monkeys, 20, |x| x / 3);
+    let p2 = run(&mut monkeys_p2, 10_000, |x| x % lcm);
+    (p1, p2)
 }
 
-fn run(monkeys: &mut [Monkey], rounds: usize) -> usize {
-    print_items(0, monkeys);
-    for round in 0..rounds {
+fn run(monkeys: &mut [Monkey], rounds: usize, management: impl Fn(Int) -> Int) -> usize {
+    for _ in 0..rounds {
         for id in 0..monkeys.len() {
             let monkey = &mut monkeys[id];
 
             //unfortunately needed because I can't borrow both the current monkey
             //and the "thrown to" monkey at the same time.
-            let mut postbag: HashMap<usize, Vec<i32>> = HashMap::new();
+            let mut postbag: HashMap<usize, Vec<Int>> = HashMap::new();
 
             for &item in &monkey.items {
                 monkey.inspected += 1;
-                let new = monkey.op.apply(item) / 3;
+                let new = management(monkey.op.apply(item));
                 if new % monkey.test.modulo == 0 {
                     postbag.entry(monkey.test.pass).or_default().push(new);
                 } else {
@@ -46,34 +48,11 @@ fn run(monkeys: &mut [Monkey], rounds: usize) -> usize {
                 .into_iter()
                 .for_each(|(id, items)| monkeys[id].items.extend(items));
         }
-        print_items(round + 1, monkeys);
     }
 
-    monkey_business(monkeys)
-}
-
-fn monkey_business(monkeys: &mut [Monkey]) -> usize {
     monkeys.sort_by(|a, b| b.inspected.cmp(&a.inspected));
-    let bananas = monkeys[0].inspected * monkeys[1].inspected;
-    monkeys.sort_by(|a, b| a.id.cmp(&b.id));
-
-    bananas
+    monkeys[0].inspected * monkeys[1].inspected
 }
-
-#[cfg(test)]
-fn print_items(round: usize, monkeys: &[Monkey]) {
-    println!("Round {round}");
-    for monkey in monkeys {
-        println!(
-            "Monkey {} [{}]: {:?}",
-            monkey.id, monkey.inspected, monkey.items
-        );
-    }
-    println!();
-}
-
-#[cfg(not(test))]
-fn print_items(_: usize, _: &[Monkey]) {}
 
 #[cfg(test)]
 mod test {
@@ -84,6 +63,6 @@ mod test {
 
     #[test]
     fn provided_p1() {
-        assert_eq!((10605, 0), solve(PROVIDED, "\r\n\r\n"));
+        assert_eq!((10605, 2713310158), solve(PROVIDED, "\r\n\r\n"));
     }
 }
