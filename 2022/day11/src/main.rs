@@ -18,7 +18,7 @@ fn solve(input: impl AsRef<str>, split: &str) -> (usize, usize) {
     let mut monkeys = parse_monkeys(&input, split);
     let mut monkeys_p2 = parse_monkeys(&input, split);
 
-    let lcm: Int = monkeys.iter().map(|monkey| monkey.test.modulo).product();
+    let lcm: Int = monkeys.iter().map(|monkey| monkey.pred.modulo).product();
     let p1 = run(&mut monkeys, 20, |x| x / 3);
     let p2 = run(&mut monkeys_p2, 10_000, |x| x % lcm);
     (p1, p2)
@@ -33,15 +33,16 @@ fn run(monkeys: &mut [Monkey], rounds: usize, management: impl Fn(Int) -> Int) -
             //and the "thrown to" monkey at the same time.
             let mut postbag: HashMap<usize, Vec<Int>> = HashMap::new();
 
-            for &item in &monkey.items {
-                monkey.inspected += 1;
-                let new = management(monkey.op.apply(item));
-                if new % monkey.test.modulo == 0 {
-                    postbag.entry(monkey.test.pass).or_default().push(new);
-                } else {
-                    postbag.entry(monkey.test.fail).or_default().push(new);
-                }
-            }
+            monkey.inspected += monkey.items.len();
+            monkey
+                .items
+                .iter()
+                .map(|&it| monkey.op.apply(it))
+                .map(&management)
+                .for_each(|it| {
+                    let id = monkey.pred.test(it);
+                    postbag.entry(id).or_default().push(it);
+                });
 
             monkey.items.clear();
             postbag

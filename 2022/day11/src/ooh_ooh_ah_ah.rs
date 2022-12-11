@@ -21,7 +21,7 @@ pub struct Monkey {
     pub id: usize,
     pub items: Vec<Int>,
     pub op: Op,
-    pub test: Predicate,
+    pub pred: Predicate,
     pub inspected: usize,
 }
 
@@ -42,13 +42,13 @@ impl FromStr for Monkey {
             .collect();
 
         let op = lines[2].parse().unwrap();
-        let test = lines[3..=5].into();
+        let pred = lines[3..=5].into();
 
         Ok(Self {
             id,
             items,
             op,
-            test,
+            pred,
             inspected: 0,
         })
     }
@@ -58,6 +58,16 @@ pub struct Predicate {
     pub modulo: Int,
     pub pass: usize,
     pub fail: usize,
+}
+
+impl Predicate {
+    pub fn test(&self, item: Int) -> usize {
+        if item % self.modulo == 0 {
+            self.pass
+        } else {
+            self.fail
+        }
+    }
 }
 
 impl From<&[&str]> for Predicate {
@@ -142,8 +152,8 @@ impl fmt::Display for Monkey {
                 Add(Const(x)) => format!("+ {}", x),
             }
         )?;
-        writeln!(f, "  Test: divisible by {}", self.test.modulo)?;
-        writeln!(f, "    If true: throw to monkey {}", self.test.pass)?;
-        writeln!(f, "    If false: throw to monkey {}", self.test.fail)
+        writeln!(f, "  Test: divisible by {}", self.pred.modulo)?;
+        writeln!(f, "    If true: throw to monkey {}", self.pred.pass)?;
+        writeln!(f, "    If false: throw to monkey {}", self.pred.fail)
     }
 }
