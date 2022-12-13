@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::HashMap;
 
 use aoc::{grid::Grid, pos::Pos};
 
@@ -16,6 +16,7 @@ pub struct Node {
     pub height: u8,
 }
 
+#[allow(dead_code)]
 impl Map {
     pub fn connections(&self, node: Pos<i32>) -> &[Node] {
         self.nodes.get(self.node_at(node)).unwrap()
@@ -72,17 +73,19 @@ impl Map {
 
                 let connections: Vec<Node> = neighbors
                     .into_iter()
+                    //ensure the pos is inside the grid's bounds
                     .filter(|n| {
                         *n.x() >= 0
                             && *n.x() < g_width as i32
                             && *n.y() >= 0
                             && *n.y() < g_height as i32
                     })
+                    //Pos -> (Pos, char)
                     .map(|n| (n, grid[(*n.x() as usize, *n.y() as usize)]))
+                    //Pos -> (Pos, height)
                     .map(|(n, other_height)| (n, to_height(*other_height)))
-                    .filter(|(_, other_height)| {
-                        *other_height == height + 1 || *other_height <= height
-                    })
+                    //only accept nodes that are traversable
+                    .filter(|(_, other_height)| *other_height <= height + 1)
                     .map(|(n, other_height)| Node {
                         pos: n,
                         height: other_height,
@@ -110,57 +113,63 @@ fn to_height(ch: char) -> u8 {
     }
 }
 
-pub fn find_path(map: &Map) -> Vec<&Node> {
-    let mut queue = VecDeque::new();
-    let mut visited = HashSet::new();
+pub fn find_path(map: &Map) -> usize {
+    let mut queue = Vec::new();
     let start = map.start();
-    queue.push_back(start);
-    visited.insert(start);
+    queue.extend(map.connections(start.pos));
 
-    let mut path = Vec::new();
+    let mut dist = HashMap::new();
+    dist.insert(start.pos, 0);
 
-    while let Some(current) = queue.pop_back() {
-        path.push(current);
-        if current == map.end() {
-            break;
-        }
+    while let Some(current) = queue.pop() {
+        let valid: Vec<&Node> = map
+            .connections(current.pos)
+            .iter()
+            .filter(|node| node.height <= current.height + 1)
+            .collect();
 
-        for node in map.connections(current.pos) {
-            if visited.contains(&node) {
-                continue;
-            }
-
-            visited.insert(node);
-            queue.push_back(node);
-        }
-    }
-
-    path
-}
-
-pub fn print_path(map: &Map, path: &[&Node]) {
-    let mut buf = vec!['·'; map.size.0 * map.size.1];
-
-    for idx in 0..path.len() {
-        let current = path[idx];
-
-        let ch = if idx + 1 == path.len() {
-            'Ω'
-        } else if current == map.start() {
-            'α'
-        } else {
-            let range = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            let pct = ((idx as f64 / path.len() as f64) * range.len() as f64).floor() as usize;
-            range[pct]
+        let min = match valid.iter().filter_map(|node| dist.get(&node.pos)).min() {
+            Some(min) => min + 1,
+            None => continue,
         };
 
-        buf[*current.pos.y() as usize * map.size.0 + *current.pos.x() as usize] = ch;
+        if current.pos == map.end {
+            println!("Found the end");
+        }
+
+        let curr_dist = dist.entry(current.pos).or_insert(usize::MAX);
+        if *curr_dist > min {
+            *curr_dist = min;
+            queue.extend(valid);
+        }
     }
 
-    for y in 0..map.size.1 {
-        for x in 0..map.size.0 {
-            print!("{} ", buf[y * map.size.0 + x]);
-        }
-        println!();
-    }
+    *dist.get(&map.end).unwrap()
 }
+
+// pub fn print_path(map: &Map, path: &[&Node]) {
+//     let mut buf = vec!['·'; map.size.0 * map.size.1];
+
+//     for idx in 0..path.len() {
+//         let current = path[idx];
+
+//         let ch = if idx + 1 == path.len() {
+//             'Ω'
+//         } else if current == map.start() {
+//             'α'
+//         } else {
+//             let range = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+//             let pct = ((idx as f64 / path.len() as f64) * range.len() as f64).floor() as usize;
+//             range[pct]
+//         };
+
+//         buf[*current.pos.y() as usize * map.size.0 + *current.pos.x() as usize] = ch;
+//     }
+
+//     for y in 0..map.size.1 {
+//         for x in 0..map.size.0 {
+//             print!("{} ", buf[y * map.size.0 + x]);
+//         }
+//         println!();
+//     }
+// }

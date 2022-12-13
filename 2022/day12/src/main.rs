@@ -15,10 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn solve(input: impl AsRef<str>) -> (usize, usize) {
     let map = Map::new(input);
 
-    let path = find_path(&map);
-    print_path(&map, &path);
-    let p1 = path.len();
-
+    let p1 = find_path(&map);
     (p1, 0)
 }
 
@@ -35,6 +32,6 @@ abdefghi";
 
     #[test]
     fn provided_p1() {
-        assert_eq!((0, 0), solve(PROVIDED));
+        assert_eq!((31, 0), solve(PROVIDED));
     }
 }
