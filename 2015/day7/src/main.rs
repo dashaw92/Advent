@@ -33,7 +33,7 @@ struct Wire {
 #[derive(Debug, Clone)]
 enum State {
     Value(u16),
-    Instr(Box<Instruction>),
+    Instr(Instruction),
 }
 
 #[derive(Debug, Clone)]
@@ -112,7 +112,7 @@ impl Circuit {
             let (lhs, out) = instr.split_once(" -> ").unwrap();
             let instr: Instruction = lhs.parse().unwrap();
             let wire = Wire {
-                state: State::Instr(Box::new(instr)),
+                state: State::Instr(instr),
             };
 
             wires.insert(out.into(), wire);
