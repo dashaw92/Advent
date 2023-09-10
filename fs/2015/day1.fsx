@@ -32,26 +32,29 @@ let mappedInput =
 //value in the list to the sum.
 //By doing this, we get an output list where each element corresponds to Santa's
 //stair level at that index
-let sums input =
-    let buildSums idx _ =
-        input
-        |> List.take (idx + 1)
-        |> List.sum
-    input
-    |> List.mapi buildSums
+
+(* 
+* Update 9/9/2023: Imagine my surprise when I find out that there's a function that does EXACTLY this :)
+* let sums input =
+*     let buildSums idx _ =
+*         input
+*         |> List.take (idx + 1)
+*         |> List.sum
+*     input
+*     |> List.mapi buildSums
+* 
+* //Finally, get the solutions for both parts
+* let solvedInput = 
+*     mappedInput
+*     |> sums
+*)
+let solvedInput = mappedInput |> List.scan (+) 0
 
 //P2 cares about when we first reach level -1
 let part2Pred elem = elem = -1
 
-//Finally, get the solutions for both parts
-let solvedInput = 
-    mappedInput
-    |> sums
-
 //The last element is Santa's final position
 let part1 = solvedInput |> List.last
-let part2 =
-    (solvedInput
-    |> List.findIndex part2Pred) + 1
+let part2 = solvedInput |> List.findIndex part2Pred
 
 printfn $"Part 1: {part1} | Part 2: {part2}"
