@@ -67,3 +67,31 @@ let graphOf (input: string): Graph =
     allPoints
     |> Seq.map (possibleSteps pg)
     |> Seq.toList
+
+let printG g =
+    let fmtNode (ch, pos, neighbors) =
+        sprintf "%A (%A) -> %A" ch pos neighbors
+    g
+    |> List.map fmtNode
+    |> List.iter (fun node -> printfn "%s" node)
+
+let bfs (g: Graph) (start: P) (target: P) =
+    let connections g node = 
+        let (_, _, conns) = g |> List.find (fun (_, pos, _) -> pos = node)
+        conns
+
+    let queue = connections g start
+
+    let rec aux (queue: P list) (visited: P list) =
+        match queue with
+        | [] -> 0
+        | head :: tails ->
+            if visited |> List.contains head then
+                0
+            else
+                printfn "%A" head
+                if head = target then
+                    0
+                else
+                    1 + aux (tails @ (connections g head)) (head :: visited)
+    aux queue [start]
