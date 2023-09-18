@@ -70,10 +70,10 @@ let graphOf (input: string): Graph =
 
 let printG g =
     let fmtNode (ch, pos, neighbors) =
-        sprintf "%A (%A) -> %A" ch pos neighbors
+        $"%A{ch} (%A{pos}) -> %A{neighbors}"
     g
     |> List.map fmtNode
-    |> List.iter (fun node -> printfn "%s" node)
+    |> List.iter (printfn "%s")
 
 let bfs (g: Graph) (start: P) (target: P) =
     let connections g node = 
@@ -89,7 +89,7 @@ let bfs (g: Graph) (start: P) (target: P) =
             if visited |> List.contains head then
                 0
             else
-                printfn "%A" head
+                printfn $"%A{head}"
                 if head = target then
                     0
                 else
