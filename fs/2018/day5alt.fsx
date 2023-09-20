@@ -26,12 +26,30 @@ let rec solve (input: char list) (stack: char list): char list =
             else
                 //No reaction, "push" head onto the full stack (which includes stackHead still)
                 solve tail (head :: stack)
-                
-let p1: int = solve input [] |> List.length
+           
+//My favorite implementation of this puzzle so far. Uses fold to simplify the logic, but is
+//the same logic as above.
+let foldSolve input =
+    //stack: fold accumulator
+    //a: next element in the input list
+    //For an empty accumulator, just return a in a singleton list
+    //Otherwise, check the reaction. For a reaction, return just the tail. Otherwise,
+    //return a cons stack
+    let foldReact stack a =
+        match stack with
+        | [] -> [a]
+        | b :: tail ->
+            if reacts a b then
+                tail
+            else
+                a :: stack
+    input |> List.fold foldReact []
+
+let p1: int = foldSolve input |> List.length
 printfn $"%A{p1}"
 
 //Haskell for Imperative Programmers #11 - Folding Exercises
-//(I wanted to fully understand folding before implementing an alternate solution)
+//(I wanted to fully understand folding before implementing foldSolve)
 module Folding =
     let rev = List.fold :: []
     let prefixes<'a> = List.fold (fun acc x -> (x :: List.head acc) :: acc) [[]]
