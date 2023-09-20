@@ -29,3 +29,13 @@ let rec solve (input: char list) (stack: char list): char list =
                 
 let p1: int = solve input [] |> List.length
 printfn $"%A{p1}"
+
+//Haskell for Imperative Programmers #11 - Folding Exercises
+//(I wanted to fully understand folding before implementing an alternate solution)
+module Folding =
+    let rev = List.fold :: []
+    let prefixes<'a> = List.fold (fun acc x -> (x :: List.head acc) :: acc) [[]]
+    let prefixesB xs =
+        let appendEl el xss = xss |> List.map (fun xs -> el :: xs)
+        let folder x acc = [x] :: appendEl x acc
+        List.foldBack folder xs []
