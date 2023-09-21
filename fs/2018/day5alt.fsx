@@ -19,13 +19,10 @@ let rec solve (input: char list) (stack: char list): char list =
     | head :: tail ->
         match stack with
         | [] -> solve tail [head]
-        | stackHead :: stackTail ->
-            if reacts stackHead head then
-                //"Pop" off the stackHead
-                solve tail stackTail
-            else
-                //No reaction, "push" head onto the full stack (which includes stackHead still)
-                solve tail (head :: stack)
+        //"Pop" off the stackHead
+        | stackHead :: stackTail when reacts stackHead head -> solve tail stackTail
+        //No reaction, "push" head onto the full stack (which includes stackHead still)
+        | _ -> solve tail (head :: stack)
            
 //My favorite implementation of this puzzle so far. Uses fold to simplify the logic, but is
 //the same logic as above.
@@ -38,11 +35,8 @@ let foldSolve input =
     let foldReact stack a =
         match stack with
         | [] -> [a]
-        | b :: tail ->
-            if reacts a b then
-                tail
-            else
-                a :: stack
+        | b :: tail when reacts a b -> tail
+        | _ -> a :: stack
     input |> List.fold foldReact []
 
 let p1: int = foldSolve input |> List.length

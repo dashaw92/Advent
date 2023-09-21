@@ -6,16 +6,12 @@ let input =
     |> String.concat ""
 
 let reacts a b = a <> b && (toUpper a = b || toUpper b = a)
-
-let rec next (units: char list): char list =
-    match units with
+            
+let rec next = function
     | [] -> []
     | [a] -> [a]
-    | a :: b :: tail ->
-        if reacts a b then
-            tail
-        else
-            a :: next (b :: tail)
+    | a :: b :: tail when reacts a b -> tail
+    | a :: tail -> a :: next tail
    
 let fullyReact (input: string): string =
     let rec aux (units: char list) =
