@@ -40,7 +40,21 @@ let foldSolve input =
     input |> List.fold foldReact []
 
 let p1: int = foldSolve input |> List.length
-printfn $"%A{p1}"
+
+let p2 =
+    let allUnits =
+        seq {
+            for u in 'a' .. 'z' do
+            yield u, toUpper u
+        } |> Seq.toList
+        
+    let dropAllUnits input (upper, lower) = input |> List.filter (fun el -> el <> upper && el <> lower )
+    
+    allUnits
+    |> List.map (dropAllUnits input)
+    |> List.map foldSolve
+    |> List.map List.length
+    |> List.min
 
 //Haskell for Imperative Programmers #11 - Folding Exercises
 //(I wanted to fully understand folding before implementing foldSolve)
