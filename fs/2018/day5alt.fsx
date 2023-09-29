@@ -51,9 +51,7 @@ let p2 =
     let dropAllUnits input (upper, lower) = input |> List.filter (fun el -> el <> upper && el <> lower )
     
     allUnits
-    |> List.map (dropAllUnits input)
-    |> List.map foldSolve
-    |> List.map List.length
+    |> List.map (dropAllUnits input >> foldSolve >> List.length)
     |> List.min
 
 //Haskell for Imperative Programmers #11 - Folding Exercises
