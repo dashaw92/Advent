@@ -82,7 +82,7 @@ let solveP2 =
     >> Array.sum
 
 let input = 
-    System.IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/day2.txt") 
+    IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/day2.txt") 
     |> Seq.toArray
 
 let p1 = solveP1 input
