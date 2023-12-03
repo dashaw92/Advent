@@ -87,7 +87,7 @@ let solveP2 =
     parseSchem
     >> findGears
     >> List.map (List.map _.Value)
-    >> List.map (List.reduce (*))
+    >> List.map (List.reduce ( * ))
     >> List.sum
 
 let input =
