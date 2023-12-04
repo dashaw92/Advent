@@ -18,8 +18,7 @@ let parseSchem (str: string) =
       Width = width
       Height = height }
 
-let isSymbol ch =
-    ch <> '.' && not <| Char.IsAsciiDigit ch
+let isSymbol ch = ch <> '.' && not <| Char.IsAsciiDigit ch
 
 let isGear = (=) '*'
 let isPart = Char.IsAsciiDigit
@@ -81,7 +80,11 @@ let findGears schem =
     |> List.map (List.distinctBy (fun part -> (part.X, part.Y)))
     |> List.filter (List.length >> (=) 2)
 
-let solveP1 = parseSchem >> findParts >> List.map _.Value >> List.sum
+let solveP1 = 
+    parseSchem 
+    >> findParts 
+    >> List.map _.Value 
+    >> List.sum
 
 let solveP2 =
     parseSchem
