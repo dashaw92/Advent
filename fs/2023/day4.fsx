@@ -37,7 +37,6 @@ let insertOrChange m (vFn: int -> int) k =
     let v = getOr0 m k
     Map.add k (vFn v) m
 
-
 let merge (m1: Map<'a, int>) (m2: Map<'a, int>) =
     let m1k = m1.Keys |> List.ofSeq
     let m2k = m2.Keys |> List.ofSeq
