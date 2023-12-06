@@ -1,3 +1,6 @@
+#load "AoCShared.fsx"
+
+open AoCShared
 open System
 
 type Mapper = int64 -> int64
@@ -52,7 +55,5 @@ let solve seedParser =
 
 let solveP1 = solve parseSeedsP1
 let solveP2 = solve parseSeedsP2
-
-let rf path = IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/{path}") |> String.concat "\n"
 
 let input = rf "day5.txt"

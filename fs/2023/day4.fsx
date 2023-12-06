@@ -1,9 +1,9 @@
+#load "AoCShared.fsx"
+
+open AoCShared
 open System
-open System.Text.RegularExpressions
 
 type Card = { Id: int; Matches: int; Points: int }
-
-let removeExcessSpaces (line: string) = Regex.Replace (line, " {2,}", " ")
 
 let toNums (numbers: string) =
     numbers.Split " "
@@ -23,7 +23,7 @@ let points winning numbers =
     | _ -> 0, 0
 
 let parseCard (card: string) =
-    let card = removeExcessSpaces card
+    let card = despace card
     let sp = card.Split " | "
     let id = ((sp[0].Split " ").[1].Split ":").[0] |> int
     let winning = toNums (sp[0].Split ": ").[1]
@@ -64,8 +64,7 @@ let processP2 cards =
 let solveP1 = List.map parseCard >> List.map _.Points >> List.sum
 let solveP2 = List.map parseCard >> processP2
 
-let input =
-    IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/day4.txt") |> List.ofSeq
+let input = (rf "day4.txt").Split '\n' |> List.ofArray
 
 let p1 = solveP1 input
 let p2 = solveP2 input

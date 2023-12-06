@@ -39,8 +39,5 @@ let solveP1 = solve parseInput
 let solveP2 = solve combineRaces
 
 let input = rf "day6.txt"
-let example =
-    "Time:      7  15   30
-Distance:  9  40  200"
 
 let p1 = solveP1 input

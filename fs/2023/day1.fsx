@@ -1,8 +1,9 @@
+#load "AoCShared.fsx"
+
+open AoCShared
 open System
 
-let input = 
-    System.IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/day1.txt") 
-    |> Seq.toList
+let input = (rf "day1.txt").Split '\n' |> List.ofArray
 
 let findDigit (str: string) =
     let charToInt = Char.GetNumericValue >> int

@@ -1,3 +1,6 @@
+#load "AoCShared.fsx"
+
+open AoCShared
 open System
 
 type Dice =
@@ -81,9 +84,7 @@ let solveP2 =
     >> Array.map (fewestCubes >> List.map fst >> List.reduce ( * ))
     >> Array.sum
 
-let input = 
-    IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/day2.txt") 
-    |> Seq.toArray
+let input = (rf "day2.txt").Split '\n'
 
 let p1 = solveP1 input
 let p2 = solveP2 input

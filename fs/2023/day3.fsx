@@ -1,3 +1,6 @@
+#load "AoCShared.fsx"
+
+open AoCShared
 open System
 
 type Schem =
@@ -93,8 +96,7 @@ let solveP2 =
     >> List.map (List.reduce ( * ))
     >> List.sum
 
-let input =
-    IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/day3.txt") |> String.concat "\n"
+let input = rf "day3.txt"
 
 let p1 = solveP1 input
 let p2 = solveP2 input
