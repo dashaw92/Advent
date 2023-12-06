@@ -20,7 +20,6 @@ let makeMapper (mappings: string): Mapper =
             let len = vals[2] - 1L
 
             (fun mapInput ->
-                // printfn $"{dest} <- {src} - {src + len} ({len})"
                 match mapInput with
                 | outRange when outRange < src || outRange > (src + len) -> outRange
                 | x -> dest + (x - src)
@@ -28,9 +27,15 @@ let makeMapper (mappings: string): Mapper =
         )
     |> Array.reduce anyMapper
 
-let parseInput (input: string) =
+let parseSeedsP1 = id
+let parseSeedsP2 seeds =
+    seeds
+    |> Seq.chunkBySize 2
+    |> Seq.collect (fun range -> seq { range[0] .. (range[0] + range[1] - 1L) })
+
+let parseInput seedParser (input: string) =
     let sections = input.Split "\n\n"
-    let seeds = (sections[0].Split " ")[1..] |> Array.map int64
+    let seeds = seedParser ((sections[0].Split " ")[1..] |> Seq.map int64)
 
     let chain = 
         sections[1..]
@@ -39,10 +44,13 @@ let parseInput (input: string) =
 
     seeds, chain
 
-let solveP1 =
-    parseInput
-    >> (fun (seeds, chain) -> seeds |> Array.map chain)
-    >> Array.min
+let solve seedParser =
+    (parseInput seedParser)
+    >> (fun (seeds, chain) -> seeds |> Seq.map chain)
+    >> Seq.min
+
+let solveP1 = solve parseSeedsP1
+let solveP2 = solve parseSeedsP2
 
 let rf path = IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/{path}") |> String.concat "\n"
 
