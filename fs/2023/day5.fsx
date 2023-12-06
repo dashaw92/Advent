@@ -28,10 +28,9 @@ let makeMapper (mappings: string): Mapper =
     |> Array.reduce anyMapper
 
 let parseSeedsP1 = id
-let parseSeedsP2 seeds =
-    seeds
-    |> Seq.chunkBySize 2
-    |> Seq.collect (fun range -> seq { range[0] .. (range[0] + range[1] - 1L) })
+let parseSeedsP2 =
+    Seq.chunkBySize 2
+    >> Seq.collect (fun range -> seq { range[0] .. (range[0] + range[1] - 1L) })
 
 let parseInput seedParser (input: string) =
     let sections = input.Split "\n\n"
@@ -42,11 +41,13 @@ let parseInput seedParser (input: string) =
         |> Array.map makeMapper
         |> Array.reduce (>>)
 
-    seeds, chain
+    chain, seeds
+
+let uncurry f (a, b) = f a b
 
 let solve seedParser =
-    (parseInput seedParser)
-    >> (fun (seeds, chain) -> seeds |> Seq.map chain)
+    parseInput seedParser
+    >> uncurry Seq.map
     >> Seq.min
 
 let solveP1 = solve parseSeedsP1
@@ -55,4 +56,3 @@ let solveP2 = solve parseSeedsP2
 let rf path = IO.File.ReadLines($"{__SOURCE_DIRECTORY__}/{path}") |> String.concat "\n"
 
 let input = rf "day5.txt"
-let example = rf "day5ex.txt"
