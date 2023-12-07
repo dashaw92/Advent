@@ -2,11 +2,11 @@
 open AoCShared
 open System
 
-type Card = C2 | C3 | C4 | C5 | C6 | C7 | C8 | C9 | CT | CJ | CQ | CK | CA
+type Card = CJoker | C2 | C3 | C4 | C5 | C6 | C7 | C8 | C9 | CT | CJ | CQ | CK | CA
 type Hand = { Bid: int; Cards: Card list }
 type HandType = Five | Four | House | Three | Two | One | High
 
-let cardOf = function
+let cardOf isP2 = function
     | '2' -> C2
     | '3' -> C3
     | '4' -> C4
@@ -16,15 +16,16 @@ let cardOf = function
     | '8' -> C8
     | '9' -> C9
     | 'T' -> CT
+    | 'J' when isP2 -> CJoker
     | 'J' -> CJ
     | 'Q' -> CQ
     | 'K' -> CK
     | 'A' -> CA
     | bad -> failwithf $"Bad card type: {bad}"
-let parseHand (str: string): Card list = str.ToCharArray() |> Array.map cardOf |> List.ofArray
-let parseInput (str: string) = 
+let parseHand p2 (str: string) = str.ToCharArray() |> Array.map (cardOf p2) |> List.ofArray
+let parseInput p2 (str: string) = 
     let sp = str.Split " "
-    let hand = parseHand sp[0]
+    let hand = parseHand p2 sp[0]
     let bid = sp[1] |> int
 
     { Bid = bid; Cards = hand }
@@ -35,7 +36,8 @@ let countCards hand =
     |> List.distinctBy (fun (card, _) -> card)
     |> Map
 
-let classify hand =
+let classify mapper hand =
+    let hand = mapper hand
     let count = countCards hand
     let hasSetOf num = Map.values count |> Seq.exists ((=) num)
     let distinctCards = Map.keys count |> Seq.length
@@ -50,9 +52,23 @@ let classify hand =
         else One
     else High
 
-let cmpHands h1 h2 =
-    let tH1 = classify h1
-    let tH2 = classify h2
+let expandJokers hand =
+    let count = countCards hand
+    let numJokers = defaultArg (Map.tryFind CJoker count) 0
+    match numJokers with
+    | 0 -> hand
+    | 5 -> { hand with Cards = [C2; C2; C2; C2; C2]}
+    | x ->
+        let commonCard = Map.toSeq count |> Seq.filter (fst >> (<>) CJoker) |> Seq.maxBy snd |> fst
+        let replacedCards = 
+            hand.Cards 
+            |> List.map (fun card -> if card = CJoker then commonCard else card)
+        { hand with Cards = replacedCards }
+
+let cmpHands classifier h1 h2 =
+    if h1 = h2 then 0 else
+    let tH1 = classifier h1
+    let tH2 = classifier h2
 
     if tH1 <> tH2 then compare tH1 tH2
     else
@@ -60,20 +76,17 @@ let cmpHands h1 h2 =
         |> List.find (fun (c1, c2) -> c1 <> c2)
         |> (fun (c1, c2) -> compare c2 c1)
 
-let solveP1 =
-    List.map parseInput
-    >> List.sortWith cmpHands
+let solve parser mapper =
+    List.map parser
+    >> List.sortWith (cmpHands (classify mapper))
     >> List.rev
     >> List.mapi (fun ranking hand -> (ranking + 1) * hand.Bid)
     >> List.sum
 
-let input = (rf "day7.txt").Split '\n' |> List.ofArray
-let example =
-    "32T3K 765
-T55J5 684
-KK677 28
-KTJJT 220
-QQQJA 483".Split '\n' |> List.ofArray
+let solveP1 = solve (parseInput false) id
+let solveP2 = solve (parseInput true) expandJokers
 
-// let test = parseHand >> (fun hand -> { Bid = 0; Cards = hand })
-// let countIt = parseHand >> (fun hand -> { Bid = 0; Cards = hand }) >> countCards
+let input = (rf "day7.txt").Split '\n' |> List.ofArray
+
+let p1 = solveP1 input
+let p2 = solveP2 input
