@@ -33,7 +33,7 @@ let parseInput p2 (str: string) =
 let countCards hand =
     hand.Cards
     |> List.map (fun card -> card, (List.filter ((=) card) hand.Cards |> List.length))
-    |> List.distinctBy (fun (card, _) -> card)
+    |> List.distinctBy fst
     |> Map
 
 let classify mapper hand =
