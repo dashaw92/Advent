@@ -23,11 +23,9 @@ let combineRaces input =
 let allMethods race =
     let min = 1L
     let max = race.Time - 1L
-    seq {
-        for i in min..max do
-            let speed = i
-            yield i * (race.Time - i)
-    } |> Seq.filter (fun method -> method > race.Record)
+    seq [min .. max]
+    |> Seq.map (fun i -> i * (race.Time - i))
+    |> Seq.filter ((<) race.Record)
 
 let solve parser =
     parser
@@ -41,3 +39,4 @@ let solveP2 = solve combineRaces
 let input = rf "day6.txt"
 
 let p1 = solveP1 input
+let p2 = solveP2 input
