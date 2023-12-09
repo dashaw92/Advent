@@ -27,16 +27,11 @@ let parse (input: string list) =
     
     { Instrs = instrs; Nodes = nodes }
 
-let traverse start goal input =
+let rec findEndNode steps node input =
     let gn = getNode input
-
-    let rec aux steps start goal =
-        match start with
-        | isGoal when isGoal = goal -> steps
-        | _ ->
-            let next = gn <| nextInstr steps input start
-            aux (steps + 1L) next goal
-    aux 0L (gn start) (gn goal)
+    let next = (gn >> nextInstr steps input) node
+    if endWith 'Z' next then steps + 1L
+    else findEndNode (steps + 1L) next input
 
 let lcm_all =
     let rec gcd a b =
@@ -45,24 +40,17 @@ let lcm_all =
         | _ -> gcd b (a % b)
     
     let lcm a b = a * b / (gcd a b)
-
-    List.reduce lcm
+    Seq.reduce lcm
 
 let traverse2 input =
-    let allStarts = allNodesThat (endWith 'A') input |> List.ofSeq
-    let gn = getNode input
-
-    let rec findEndNode steps node =
-        let next = (gn >> nextInstr steps input) node
-        if endWith 'Z' next then next
-        else findEndNode (steps + 1L) next
-
-    allStarts
-    |> List.map (fun node -> node, findEndNode 0 node)
-    |> List.map (fun (nodeA, nodeB) -> traverse nodeA nodeB input)
+    allNodesThat (endWith 'A') input 
+    |> Seq.map (fun node -> findEndNode 0 node input)
     |> lcm_all
 
-let solveP1 = parse >> traverse "AAA" "ZZZ"
+let solveP1 = parse >> findEndNode 0 "AAA"
 let solveP2 = parse >> traverse2
 
 let input = (rf "day8.txt").Split '\n' |> List.ofArray
+
+let p1 = solveP1 input
+let p2 = solveP2 input
