@@ -8,16 +8,14 @@ let race (time, record) = { Time = time; Record = record }
 
 let parseInput input =
     (despace input).Split '\n'
-    |> Array.map (fun line -> (line.Split ' ')[1..])
-    |> Array.map (Array.map int64)
+    |> Array.map (fun line -> (line.Split ' ')[1..] |> Array.map int64)
     |> (fun arrays -> Array.zip arrays[0] arrays[1] |> Array.map race)
 
 let combineRaces input =
     (despace input).Split '\n'
-    |> Array.map (fun line -> (line.Split ' ')[1..])
-    |> Array.map (String.Concat)
-    |> Array.map int64
-    |> (fun values -> { Time = values[0]; Record = values[1] })
+    |> Array.map (fun line -> (line.Split ' ')[1..] |> String.Concat |> int64)
+    |> (fun values -> values[0], values[1])
+    |> race
     |> Array.singleton
 
 let allMethods race =
