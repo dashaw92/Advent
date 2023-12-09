@@ -46,11 +46,9 @@ let parseInput seedParser (input: string) =
 
     chain, seeds
 
-let uncurry f (a, b) = f a b
-
 let solve seedParser =
     parseInput seedParser
-    >> uncurry Seq.map
+    >> ((<||) Seq.map)
     >> Seq.min
 
 let solveP1 = solve parseSeedsP1
