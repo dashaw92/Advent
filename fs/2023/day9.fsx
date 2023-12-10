@@ -19,6 +19,7 @@ let findNextValue (ints: int list) =
     |> List.sum
 
 let solveP1 = List.map findNextValue >> List.sum
+let solveP2 = List.map (List.rev >> findNextValue) >> List.sum
 
 let example =
     "0 3 6 9 12 15
