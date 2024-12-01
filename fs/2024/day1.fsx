@@ -10,20 +10,16 @@ let splitNum (a: string): int64 * int64 =
     let nums = (despace a).Split (' ')
     (int64 nums[0], int64 nums[1])
 
-//(fold fn) Collapse an array of tuples to a tuple of lists
-let appendNums (a, b) (aL, bL) =
-    (aL :: a, bL :: b)
-
 let sort (aL, bL) =
     (List.sort aL, List.sort bL)
 
 let (aL, bL) = 
     input
     |> List.map splitNum
-    |> List.fold appendNums ([], [])
+    |> List.unzip
     |> sort
 
-let diffNum a b = abs a - b
+let diffNum a b = abs (a - b)
 
 let diffs = List.map2 diffNum aL bL
 let p1 = List.sum diffs
