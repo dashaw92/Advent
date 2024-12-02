@@ -8,6 +8,7 @@ let cleanNums (str: string) =
     |> Array.map _.Trim() 
     |> Array.filter (String.IsNullOrEmpty >> not)
     |> Array.map int
+    |> List.ofArray
 
 let toDay2 =
     List.ofArray
@@ -19,41 +20,46 @@ let input =
     |> lines
     |> toDay2
 
-// let input = "7 6 4 2 1
-// 1 2 7 8 9
-// 9 7 6 2 1
-// 1 3 2 4 5
-// 8 6 4 4 1
-// 1 3 6 7 9" |> lines |> toDay2
+let input2 = "7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9" |> lines |> toDay2
 
-type Report =
-| Inc
-| Dec
-| Invalid
+let normalize =
+    function
+    | a :: b :: _ when a > b -> List.rev
+    | _ -> id
 
-let safe reportType (a, b) =
-    match reportType with
-    | Inc when abs(a - b) < 4 -> a < b
-    | Dec when abs(a - b) < 4 -> a > b
-    | _ -> false
+let solve nums =
+    nums
+    |> normalize nums
+    |> List.pairwise
+    |> List.forall (fun (a, b) -> a < b && abs(a - b) <= 3)
 
-let isSafe (report: int array) =
-    let pairs = Array.pairwise report
-    let reportType = 
-        match pairs[0] with
-        | (a, b) when a < b -> Inc
-        | (a, b) when a > b -> Dec
-        | _ -> Invalid
+//Doesn't work because we love weekend puzzles
+let solve2 nums =
+    let normal = normalize nums <| nums
+    let filtered =
+        normal
+        |> List.windowed 2 
+        |> List.filter (fun n -> n[0] < n[1] && abs(n[0] - n[1]) <= 3)
+    printfn $"%A{filtered} - %A{normal}"
+    (List.length normal) - (List.length filtered) < 2
 
-    if reportType = Invalid then
-        false
-    else    
-        Array.pairwise report
-        |> Array.forall (safe reportType)
+let p1 = 
+    input2
+    |> List.map solve
+    |> List.filter id
+    |> List.length
 
-let p1 =
-    input
-    |> List.filter isSafe
+    
+let p2 = 
+    input2
+    |> List.map solve2
+    |> List.filter id
     |> List.length
 
 printfn $"%i{p1}"
+printfn $"%i{p2}"
