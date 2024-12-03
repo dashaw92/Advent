@@ -4,13 +4,6 @@ open AoCShared
 open System
 open System.Text.RegularExpressions
 
-let cleanNums (str: string) = 
-    str.Split(' ') 
-    |> Array.map _.Trim() 
-    |> Array.filter (String.IsNullOrEmpty >> not)
-    |> Array.map int
-    |> List.ofArray
-
 let input = rf "day3.txt"
 let input2 = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
 let input3 = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
@@ -43,6 +36,14 @@ type P2 =
 | Do of int
 | Dont of int
 
+let valueOf = function
+    | Do x -> x
+    | Dont x -> x
+
+let toBool = function
+    | Do _ -> true
+    | Dont _ -> false
+    
 let allDosAndDonts input =
     let dos = 
         getIndexesOf findDos input 
@@ -53,22 +54,10 @@ let allDosAndDonts input =
     
     List.append dos donts
     |> List.append [Do 0]
-    |> List.sortBy (
-        function
-        | Do a -> a
-        | Dont a -> a
-    )
-    |> List.rev
-
-let valueOf =
-    function
-    | Do x -> x
-    | Dont x -> x
+    |> List.sortByDescending valueOf
 
 let shouldMul dosDonts idx =
-    match List.find (fun flag -> idx > valueOf flag) dosDonts with
-    | Do _ -> true
-    | Dont _ -> false
+    toBool <| List.find (fun flag -> idx > valueOf flag) dosDonts
 
 let p2 =
     idxAndTotal input
