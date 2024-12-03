@@ -38,25 +38,29 @@ let solve nums =
     |> List.pairwise
     |> List.forall (fun (a, b) -> a < b && abs(a - b) <= 3)
 
-//Doesn't work because we love weekend puzzles
 let solve2 nums =
-    let normal = normalize nums <| nums
-    let filtered =
-        normal
-        |> List.windowed 2 
-        |> List.filter (fun n -> n[0] < n[1] && abs(n[0] - n[1]) <= 3)
-    printfn $"%A{filtered} - %A{normal}"
-    (List.length normal) - (List.length filtered) < 2
+    //Generates versions of the list with one element removed
+    //from 0..n
+    let len = List.length nums
+    let rec brute lists i ns =
+        match i with
+        | i when i = len -> lists
+        | _ -> brute ((List.removeAt i ns) :: lists) (i + 1) nums
+    
+    nums
+    |> brute [] 0
+    |> List.map solve
+    |> List.exists id
 
 let p1 = 
-    input2
+    input
     |> List.map solve
     |> List.filter id
     |> List.length
 
     
 let p2 = 
-    input2
+    input
     |> List.map solve2
     |> List.filter id
     |> List.length
