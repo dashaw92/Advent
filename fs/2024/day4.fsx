@@ -61,25 +61,50 @@ let isXmas dir (x, y) grid =
     | ['X';'M';'A';'S'] -> true
     | _ -> false
 
+let isMas grid (x, y) =
+    let nToS = [x - 1, y - 1; x, y; x + 1, y + 1]
+    let eToW = [x - 1, y + 1; x, y; x + 1, y - 1]
+
+    let getMas coords =
+        coords
+        |> List.filter (inBounds grid)
+        |> List.map (charAt grid)
+
+    let maybeMas1 = getMas nToS
+    let maybeMas2 = getMas eToW
+
+    let check1 = maybeMas1 = ['M'; 'A'; 'S'] || maybeMas1 = ['S'; 'A'; 'M']
+    let check2 = maybeMas2 = ['M'; 'A'; 'S'] || maybeMas2 = ['S'; 'A'; 'M']
+    check1 && check2
+
 let countXmas grid (x, y) =
     dirs
     |> List.filter (fun dir -> isXmas dir (x, y) grid)
     |> List.length
 
-let allXes grid =
+let findAll grid ch =
     let (w, h) = dims grid
     
     List.allPairs [0..w - 1] [0..h - 1]
-    |> List.filter (charAt grid >> (=)'X')
+    |> List.filter (charAt grid >> (=)ch)
 
 let solveP1 grid =
-    allXes grid
+    findAll grid 'X'
     |> List.map (countXmas grid)
     |> List.sum
 
 let p1 = solveP1 input
 printfn $"%d{p1}"
 
+
+let solveP2 grid =
+    findAll grid 'A'
+    |> List.map (isMas grid)
+    |> List.filter id
+    |> List.length
+
+let p2 = solveP2 input
+printfn $"%d{p2}"
 // let (w, h) = dims input2
 // List.allPairs [0..w - 1] [0..h - 1]
 // |> List.map (fun coord -> coord, countXmas input2 coord)
