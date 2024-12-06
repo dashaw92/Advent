@@ -40,28 +40,49 @@ let atGrid (grid: Grid) (x, y) = grid[y][x]
 let toWalls grid =
     let (w, h) = dims grid
     List.allPairs [0..w - 1] [0..h - 1]
-    // |> List.iter (printfn "%A")
     |> List.filter (fun pos -> atGrid grid pos = '#')
-    // []
 
-let updateSteps steps pos =
+let updateSteps steps pos dir =
     Map.change pos (function
-    | Some count -> Some (count + 1)
-    | None -> Some 1) steps
+    | Some prev -> Some (Set.add dir prev)
+    | None -> Some (Set.add dir Set.empty)) steps
+    
+let seenBefore steps pos dir =
+    match Map.tryFind pos steps with
+    | Some prev -> Set.contains dir prev
+    | None -> false
+    
+let rec turn walls (x, y) dir =
+    let (dx, dy) = delta dir
+    if List.contains (x + dx, y + dy) walls then
+        turn walls (x, y) (rot dir)
+    else
+        dir
+    
     
 let rec move steps walls dims dir (x, y) =
-    let nextSteps = updateSteps steps (x, y)
-    let (dx, dy) = delta dir
+    let nextSteps = updateSteps steps (x, y) dir
+    let nd = turn walls (x, y) dir
+    let (dx, dy) = delta nd
     let (nx, ny) = (x + dx, y + dy)
-    if List.contains (nx, ny) walls then
-        let nd = rot dir
-        let (nx, ny) = delta nd
-        move nextSteps walls dims nd (x + nx, y + ny)
+
+    if offGrid dims (nx, ny) then
+        nextSteps
     else
+        move nextSteps walls dims nd (nx, ny)
+
+let rec isLoop steps walls dims dir (x, y) =
+    if seenBefore steps (x, y) dir then
+        true
+    else
+        let nextSteps = updateSteps steps (x, y) dir
+        let nd = turn walls (x, y) dir
+        let (dx, dy) = delta nd
+        let (nx, ny) = (x + dx, y + dy)
         if offGrid dims (nx, ny) then
-            nextSteps
+            false
         else
-            move nextSteps walls dims dir (nx, ny)
+            isLoop nextSteps walls dims nd (nx, ny)
 
 let printIt walls steps (w, h) =
     [0..h - 1]
@@ -87,12 +108,29 @@ let solveP1 grid =
     let gdims = dims grid
 
     let out = move Map.empty walls gdims N guard
-    printIt walls out gdims
     out
-    |> Map.filter (fun _ count -> count >= 1)
     |> Map.count
-    // |> printfn "%A"
-    // 0
+
+let solveP2 grid =
+    let (w, h) = dims grid
+    let guard = getGuard grid
+    let walls = toWalls grid
+    
+    let generateAndRun grid (x, y) =
+        if guard = (x, y) || List.contains (x, y) walls then
+            false
+        else
+            let nWalls = (x, y) :: walls
+            isLoop Map.empty nWalls (w, h) N guard
+
+    let route = move Map.empty walls (w, h) N guard
+
+    route
+    |> Map.keys
+    |> Array.ofSeq
+    |> Array.Parallel.map (generateAndRun grid)
+    |> Array.filter id
+    |> Array.length
 
 let ex = toCharGrid "....#.....
 .........#
@@ -106,3 +144,4 @@ let ex = toCharGrid "....#.....
 ......#..."
 
 printfn "%d" <| solveP1 input
+printfn "%d" <| solveP2 input
