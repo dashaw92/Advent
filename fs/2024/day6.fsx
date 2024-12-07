@@ -51,6 +51,9 @@ let seenBefore steps pos dir =
     match Map.tryFind pos steps with
     | Some prev -> Set.contains dir prev
     | None -> false
+
+// let seenBefore steps pos dir = 
+//     defaultArg (Option.map (Set.contains dir) (Map.tryFind pos steps)) false
     
 let rec turn walls (x, y) dir =
     let (dx, dy) = delta dir
