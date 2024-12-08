@@ -4,6 +4,7 @@ open AoCShared
 open System
 
 type D7 = { res: int64; nums: int64 list}
+type Op = int -> int -> int
 
 let toDay7 (st: string) =
     let split = st.Split ':'
@@ -18,10 +19,42 @@ let toDay7 (st: string) =
 let opers = [ (+); (*) ]
 let input = rf "day7.txt" |> lines |> List.ofArray |> List.map toDay7
 
-//gen all combos of the operators from 2 to <some upper bound> as a table,
-//then just select the corresponding list from the table for each input nums
-//evaluate each input against the set of lists, if any = the result it's valid
+let genAll (ops: 'a list) n =
+    let toOps num =
+        [0..n - 1]
+        |> List.map (fun idx -> (num >>> idx) &&& 1)
+        |> List.map (function
+        | 0 -> ops[0]
+        | 1 -> ops[1]
+        | _ -> failwith "Uh?")
 
-//only problem is I'm not good at math or DSA :D
-//and every single function I found online to generate the permutations didn't work :D
-//but it's okay because python has itertools.permutations :D
+    let m = List.length ops
+    [0..(pown m n) - 1]
+    |> List.map toOps
+
+let table =
+    [2..12]
+    |> List.map (fun i -> i, genAll opers i)
+    |> Map.ofList
+
+let getOpers n =
+    Option.get <| Map.tryFind n table
+
+let rec collapse nums ops =
+    match nums with
+    | [x] -> x
+    | x :: n :: ns ->
+        let res = (List.head ops) x n
+        collapse (res :: ns) (List.tail ops)
+    | [] -> failwith "Bad input"
+
+let solveSingle d7 =
+    let ops = getOpers (d7.nums.Length - 1)
+    ops
+    |> List.map (collapse d7.nums)
+    |> List.exists (fun solved -> solved = d7.res)
+
+let solveP1 = List.filter solveSingle >> List.map _.res >> List.sum
+
+let p1 = solveP1 input
+printfn $"%d{p1}"
