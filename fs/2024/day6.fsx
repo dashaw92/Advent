@@ -3,8 +3,6 @@
 open AoCShared
 open System
 
-type Grid = char array array
-
 let input = rf "day6.txt" |> toCharGrid
 
 let getGuard grid =
@@ -25,17 +23,6 @@ let rot = function
 | E -> S
 | S -> W
 | W -> N
-
-let dims (grid: Grid) =
-    let w = Array.length grid[0]
-    let h = Array.length grid
-    w, h
-    
-let offGrid dims (x, y) =
-    let (w, h) = dims
-    x < 0 || y < 0 || x >= w || y >= h
-
-let atGrid (grid: Grid) (x, y) = grid[y][x]
 
 let toWalls grid =
     let (w, h) = dims grid

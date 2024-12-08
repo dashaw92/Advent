@@ -15,13 +15,6 @@ SAXAMASAAA
 MAMMMXMMMM
 MXMXAXMASX" |> toCharGrid
 
-type Grid = char array array
-
-let dims (grid: Grid) =
-    let width = Array.length grid[0]
-    let height = Array.length grid
-    width, height
-
 type Dir =
 | N
 | S
@@ -44,17 +37,11 @@ let coordsFor (x, y) = function
     | SE -> [x, y; x + 1, y + 1; x + 2, y + 2; x + 3, y + 3]
     | SW -> [x, y; x - 1, y + 1; x - 2, y + 2; x - 3, y + 3]
 
-let inBounds grid (x, y) = 
-    let (w, h) = dims grid
-    x >= 0 && y >= 0 && x < w && y < h
-
-let charAt (grid: Grid) (x, y) = grid[y][x]
-
-let isXmas dir (x, y) grid =
+let isXmas dir (x, y) (grid: Grid) =
     let maybeXmas = 
         coordsFor (x, y) dir
-        |> List.filter (inBounds grid)
-        |> List.map (charAt grid)
+        |> List.filter (inGrid (dims grid))
+        |> List.map (atGrid grid)
 
     // printfn "%A" (dir, (x, y), maybeXmas)
     match maybeXmas with
@@ -67,8 +54,8 @@ let isMas grid (x, y) =
 
     let getMas coords =
         coords
-        |> List.filter (inBounds grid)
-        |> List.map (charAt grid)
+        |> List.filter (inGrid (dims grid))
+        |> List.map (atGrid grid)
 
     let maybeMas1 = getMas nToS
     let maybeMas2 = getMas eToW
@@ -86,7 +73,7 @@ let findAll grid ch =
     let (w, h) = dims grid
     
     List.allPairs [0..w - 1] [0..h - 1]
-    |> List.filter (charAt grid >> (=)ch)
+    |> List.filter (atGrid grid >> (=)ch)
 
 let solveP1 grid =
     findAll grid 'X'
