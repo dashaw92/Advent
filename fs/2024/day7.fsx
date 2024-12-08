@@ -77,8 +77,10 @@ let solveSingle ops d7 =
     |> List.map (collapse d7.nums)
     |> List.exists (fun solved -> solved = d7.res)
 
-let solveP1 = List.filter (solveSingle table1) >> List.map _.res >> List.sum
-let solveP2 = List.filter (solveSingle table2) >> List.map _.res >> List.sum
+let solve table = List.filter (solveSingle table) >> List.map _.res >> List.sum
+
+let solveP1 = solve table1
+let solveP2 = solve table2
 
 let p1 = solveP1 input
 printfn $"%d{p1}"
