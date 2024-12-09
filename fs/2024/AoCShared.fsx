@@ -22,3 +22,8 @@ let offGrid dims (x, y) =
 let inGrid dims (x, y) = not <| offGrid dims (x, y)
 
 let atGrid (grid: Grid) (x, y) = grid[y][x]
+
+let iterGrid grid =
+    let (w, h) = dims grid
+    List.allPairs [0..w - 1] [0..h - 1]
+    |> List.map (fun pos -> pos, atGrid grid pos)
