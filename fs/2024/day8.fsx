@@ -50,3 +50,4 @@ let antiNodes grid antennas =
 let solveP1 g = antiNodes g (antennas g) 
 
 printfn "%A" (solveP1 input)
+//I don't understand what it's asking for in part 2 lol
