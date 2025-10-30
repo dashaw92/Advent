@@ -1,4 +1,5 @@
-**/.calva/repl.calva-repl
+**/.nrepl-port
+**/.calva
 **/.clj-kondo
 /target
 /classes
