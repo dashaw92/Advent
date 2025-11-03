@@ -6,9 +6,8 @@
 
 (defn parse-route [line]
   (let [groups (re-matches #"(\w+) to (\w+) = (\d+)" line)
-        start (nth groups 1)
-        end (nth groups 2)
-        dist (Integer/parseInt (nth groups 3))]
+        [_ start end dist] groups
+        dist (Integer/parseInt dist)]
     {:start start :dest end :dist dist}))
 
 
