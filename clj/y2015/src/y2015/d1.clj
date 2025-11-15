@@ -28,6 +28,5 @@
 ;; The index found here from count'ing the result of take-while is further inc'ed because
 ;; the problem wants the index of the first -1 and take-while is end-exclusive.
 (def part2 (inc (count (take-while #(not= -1 %1) (reductions + (remap-floors input))))))
-
-(println (str "Part 1: " part1))
-(println (str "Part 2: " part2))
+(println "Part 1: " part1)
+(println "Part 2: " part1)
