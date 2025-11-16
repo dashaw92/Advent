@@ -19,15 +19,13 @@
       (split $ #"\n")
       (map to-instrs $)))
 
-(get-input "ex1.txt")
-
 (defn delta [{:keys [dir amt]} [x y]]
   "Generate the end position, axis, and step delta for any given instruction"
   (case dir
-        :U [x (- y amt) :y -1]
-        :D [x (+ y amt) :y 1]
-        :L [(- x amt) y :x -1]
-        :R [(+ x amt) y :x 1]))
+        :U [x (- y amt 1) :y -1]
+        :D [x (+ y amt 1) :y 1]
+        :L [(- x amt 1) y :x -1]
+        :R [(+ x amt 1) y :x 1]))
 
 (defn run-instr [state instr [x y]]
   "Generate all steps the current instr will take given the current (x, y)"
@@ -49,7 +47,7 @@
   "Manhattan distance between (0, 0) and (x, y)"
   (+ (abs (- 0 x)) (abs (- 0 y))))
 
-(->> (get-input "input.txt")
+(->> (get-input "d3.txt")
      (map run-wire)
      (map first)
      (reduce intersect)

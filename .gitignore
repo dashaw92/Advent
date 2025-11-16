@@ -16,8 +16,9 @@ pom.xml.asc
 .hgignore
 .hg/
 
-**/input.txt
-**/day*.txt
+# **/input.txt
+# **/day*.txt
+**/*.txt
 **/target/
 **/*.rs.bk
 # User-specific stuff
