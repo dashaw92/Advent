@@ -43,11 +43,11 @@
   "Reduce the wire's instructions into [visited cells, last position]"
   (reduce reduce-wire [#{} [0 0]] wire))
 
-(defn dist [[x y]]
+(defn dist [[x y _]]
   "Manhattan distance between (0, 0) and (x, y)"
   (+ (abs (- 0 x)) (abs (- 0 y))))
 
-(->> (get-input "d3.txt")
+(->> (get-input "ex.txt")
      (map run-wire)
      (map first)
      (reduce intersect)
