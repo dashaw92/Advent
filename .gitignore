@@ -2,6 +2,7 @@
 **/.nrepl-port
 **/.calva
 **/.clj-kondo
+**/.#*
 /target
 /classes
 /checkouts
