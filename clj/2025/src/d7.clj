@@ -29,7 +29,7 @@
     (if (nil? line)
       beams
       (let [s (splitters line)
-          next (map (partial next-beam-state s) beams)]
+            next (map (partial next-beam-state s) beams)]
         (recur (inc i) (nth input (inc i) nil) (mapcat conj next))))))
 
 (count (run input))
