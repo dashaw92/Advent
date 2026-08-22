@@ -1,4 +1,4 @@
-(ns y2015.d1)
+(ns y2015.day1)
 
 ;; filename: String -> char[]
 (defn get-input 

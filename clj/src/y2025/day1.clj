@@ -1,3 +1,5 @@
+(ns y2025.day1)
+
 (defn to-move [raw]
   "Convert strings like 'R20' into a map of {:dir :R :step 20}"
   (let [[_ dir step]

@@ -1,7 +1,10 @@
+(ns y2025.day7
+  (:require [clojure.string :as str]))
+
 (defn lines [f]
   (-> f
       (slurp)
-      (clojure.string/split #"\n")))
+      (str/split #"\n")))
 
 (defn splitters [line]
   (loop [i 0

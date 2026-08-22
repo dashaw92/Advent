@@ -1,12 +1,15 @@
+(ns y2025.day4
+  (:require [clojure.string :as str]))
+
 ;; Read file `f` into a grid (2D array) of chars.
 (defn read-grid [f]
   (as-> (slurp f) $
-    ;; Split on newlines to create the y-axis of the grid.
-    (clojure.string/split $ #"\n")
-    ;; Split each line individually as chars (x-axis of the grid).
-    (map #(clojure.string/split % #"") $)
-    ;; Convert the outer and inner elements to persistent vectors so the entire grid acts like a 2D array via indexing [y][x].
-    (mapv vec $)))
+        ;; Split on newlines to create the y-axis of the grid.
+        (str/split $ #"\n")
+        ;; Split each line individually as chars (x-axis of the grid).
+        (map #(str/split % #"") $)
+        ;; Convert the outer and inner elements to persistent vectors so the entire grid acts like a 2D array via indexing [y][x].
+        (mapv vec $)))
 
 ;; All possible neighbors at a given position [x y].
 ;; @ @ @
@@ -37,8 +40,8 @@
 ;; Get the cell at [x y] in the grid
 (defn at-grid [grid [x y]]
   (-> grid
-       (nth y)
-       (nth x)))
+      (nth y)
+      (nth x)))
 
 ;; If the position is in bounds and the cell at that position is paper ("@").
 (defn is-paper [grid [x y]]

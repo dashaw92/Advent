@@ -1,4 +1,4 @@
-(ns y2015.d9
+(ns y2015.day9
   (:require [clojure.string :as str]))
 
 (def ex (str/split-lines (slurp "resources/day9ex.txt")))

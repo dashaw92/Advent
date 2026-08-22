@@ -1,15 +1,15 @@
-;; This buffer is for text that is not saved, and for Lisp evaluation.
-;; To create a file, visit it with ‘C-x C-f’ and enter text in its buffer.
+(ns y2024.day5
+  (:require [clojure.string :as str]))
 
 (defn read-input [file]
   (as-> file $
     (slurp $)
-    (clojure.string/split $ #"\n\n")
-    (mapv #(clojure.string/split %1 #"\n") $)))
+    (str/split $ #"\n\n")
+    (mapv #(str/split %1 #"\n") $)))
 
 (defn parse-line [line]
   (as-> line $pipe
-    (clojure.string/split $pipe #",")
+    (str/split $pipe #",")
     (mapv #(Integer/parseInt %) $pipe)))
 
 (defn extract-rule [input]

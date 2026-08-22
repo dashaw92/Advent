@@ -1,5 +1,5 @@
-(def split clojure.string/split)
-(def intersect clojure.set/intersection)
+(ns y2019.day3
+  (:require [clojure.string :as str]))
 
 (defn parse-instr [s]
   (let [[_           dir      amt]
@@ -9,14 +9,14 @@
     {:dir dir :amt amt}))
 
 (defn to-instrs [line]
-  (let [instrs (split line #",")
+  (let [instrs (str/split line #",")
         instrs (map parse-instr instrs)]
     instrs))
 
 (defn get-input [file]
   (as-> file $
       (slurp $)
-      (split $ #"\n")
+      (str/split $ #"\n")
       (map to-instrs $)))
 
 (defn delta [{:keys [dir amt]} [x y]]
@@ -50,7 +50,7 @@
 (->> (get-input "ex.txt")
      (map run-wire)
      (map first)
-     (reduce intersect)
+     (reduce clojure.set/intersection)
      (filter #(not= % [0 0])) ;;origin doesn't count
      (map dist)
      (apply min))

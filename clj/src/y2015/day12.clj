@@ -1,4 +1,4 @@
-(ns y2015.d12
+(ns y2015.day12
   (:require [clojure.data.json :as json]))
 
 (def doc (json/read-str (slurp "resources/day12.txt")))

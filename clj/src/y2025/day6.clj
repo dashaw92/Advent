@@ -1,3 +1,5 @@
+(ns y2025.day6)
+
 ;; find all instances of char `a` in string `s` as a sequence
 (defn find-all [s a]
          ;; index to start searching from

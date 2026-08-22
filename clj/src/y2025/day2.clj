@@ -1,3 +1,5 @@
+(ns y2025.day2)
+
 ; "asdf" -> ["as" "df"]
 (defn split-mid [s]
   (let [mid (/ (count s) 2)

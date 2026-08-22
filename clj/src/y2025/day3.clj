@@ -1,3 +1,5 @@
+(ns y2025.day3)
+
 ;; convert ASCII numbers to decimal
 ;; \0 -> 0
 ;; don't pass in non-numeric characters and expect anything useful

@@ -1,7 +1,5 @@
-(def split clojure.string/split)
-
-(defn read [file]
-  (slurp file))
+(ns y2025.day5
+  (:require [clojure.string :as str]))
 
 ;; "3-5" -> {:start 3 :end 5}
 (defn parse-range [range]
@@ -13,9 +11,9 @@
 ;; Split the input into two parts (partitioned by "\n\n"): a seq of ranges (see parse-range) and a seq of ints
 ;; output is a map {:ranges (seq of ranges) :ings (seq of ints)}
 (defn read-input [file]
-  (let [[ranges ings] (split (read file) #"\n\n")
-        ranges (split ranges #"\n")
-        ings (split ings #"\n")
+  (let [[ranges ings] (str/split (read file) #"\n\n")
+        ranges (str/split ranges #"\n")
+        ings (str/split ings #"\n")
         ranges (map parse-range ranges)
         ings (map #(Long/parseLong %) ings)]
     {:ranges ranges :ings ings}))
