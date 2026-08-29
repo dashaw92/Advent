@@ -6,34 +6,58 @@
       (slurp)
       (str/split #"\n")))
 
-(defn splitters [line]
-  (loop [i 0
-         acc []]
-    (let [next (.indexOf line "^" i)]
-      (if (= -1 next)
-        acc
-        (recur (inc next) (conj acc next))))))
+(def example-path "src/y2025/d7e.txt")
+(def example (lines example-path))
+(def input-path "src/y2025/d7.txt")
+(def input (lines input-path))
 
-(defn start-pos [line]
-  (.indexOf line "S"))
+(defn input->initial-beam-pos
+  "Take the input and find the initial [X Y] position of the beam on the first line"
+  [input]
+  (-> input
+      (first)
+      (.indexOf "S")
+      (cons [0])))
 
-(def input (lines "d7e.txt"))
+;(input->initial-beam-pos example)
 
-(defn next-beam-state [ss beam]
-  (println ss beam)
-  (if (some (partial = beam) ss)
-    [(dec beam) (inc beam)]
-    [beam]))
+(defn is-splitter?
+  "Is the character at [x y] on the input grid a beam splitter?"
+  [input [x y]]
+  (-> input
+      (nth y "")                                            ;Line y in the input
+      (nth x \.)                                            ;Character x in the line
+      (= \^)))                                              ;Splitters are denoted by '^' in the input
+;(is-splitter? ["^..."] [10 0])
 
-(defn run [input]
-  (loop [i 1
-         line (nth input i nil)
-         beams [(start-pos (nth input 0))]]
-    (if (nil? line)
-      beams
-      (let [s (splitters line)
-            next (map (partial next-beam-state s) beams)]
-        (recur (inc i) (nth input (inc i) nil) (mapcat conj next))))))
+(defn split-beam
+  "Convert a beam that hit a splitter into two new beams that are located diagonally down in both
+  directions from the beam's previous location."
+  [[x y]]
+  [[(dec x) (inc y)]
+   [(inc x) (inc y)]])
 
-(count (run input))
-(mapcat conj (map (partial next-beam-state [7 1]) [7 1 3]))
+(defn move-beam-down
+  "Increase the y component of the beam by 1 or split into two new beams if encountering a splitter"
+  [splitter-fn? [x y]]
+  (if (splitter-fn? [x (inc y)])
+    (split-beam [x y])
+    [[x (inc y)]]))
+
+(defn solve-p1
+  [input]
+  (let [height (count input)
+        is-splitter? (partial is-splitter? input)
+        move-or-collide-beams #(move-beam-down is-splitter? %)]
+    (loop [beams [(input->initial-beam-pos input)]
+           splits 0]
+      (if (every? #(>= (second %) height) beams)
+        splits
+        (let [previous-beam-count (count beams)
+              next-beams (mapcat move-or-collide-beams beams)
+              next-beam-count (count next-beams)
+              beams (distinct next-beams)
+              splits (+ splits (- next-beam-count previous-beam-count))]
+          (recur beams splits))))))
+
+(solve-p1 input)
