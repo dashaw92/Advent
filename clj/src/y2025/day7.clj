@@ -47,11 +47,13 @@
 (defn solve-p1
   [input]
   (let [height (count input)
+        outside-grid? #(>= (second %) height)
+        all-outside-grid? (partial every? outside-grid?)
         is-splitter? (partial is-splitter? input)
         move-or-collide-beams #(move-beam-down is-splitter? %)]
     (loop [beams [(input->initial-beam-pos input)]
            splits 0]
-      (if (every? #(>= (second %) height) beams)
+      (if (all-outside-grid? beams)
         splits
         (let [previous-beam-count (count beams)
               next-beams (mapcat move-or-collide-beams beams)
