@@ -7,13 +7,13 @@
   (let [[_ x y] (re-matches #"(\d+),(\d+)" line)
         x (Long/parseLong x)
         y (Long/parseLong y)]
-  [x y]))
+    [x y]))
 
 (defn lines [f]
   (as-> f $
-      (slurp $)
-      (str/split $ #"\n")
-      (map extract-coords $)))
+        (slurp $)
+        (str/split $ #"\n")
+        (map extract-coords $)))
 
 (defn rect->area
   "Given two [x,y] coordinates, calculate the area of the rectangle the coordinates form"
@@ -33,8 +33,8 @@
   [input]
   (apply max (for [r1 input
                    r2 input
-      :when (not= r1 r2)]
-  (rect->area r1 r2))))
+                   :when (not= r1 r2)]
+               (rect->area r1 r2))))
 
-(solve-p1 example) ;50
+(solve-p1 example)                                          ;50
 (solve-p1 input)
