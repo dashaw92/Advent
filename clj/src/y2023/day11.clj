@@ -42,8 +42,8 @@
 (defn expand-all [input]
   (let [rows-expanded (expand-via-empty (->rows input) (empty-indices input ->rows))
         cols-expanded (expand-via-empty (->cols rows-expanded) (empty-indices rows-expanded ->cols))
-        tranposed-to-normal (apply map vector cols-expanded)]
-    tranposed-to-normal))
+        transposed-to-normal (apply map vector cols-expanded)]
+    transposed-to-normal))
 
 (def example (read-input "src/y2023/d11e.txt"))
 ;(def input (read-input "src/y2023/d11.txt"))
