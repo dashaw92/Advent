@@ -8,8 +8,7 @@
        (map #(vec %))
        vec))
 
-(defn all-empty? [line]
-  (every? (partial = \.) line))
+(defn all-empty? [line] (every? (partial = \.) line))
 
 (defn ->rows [grid] grid)
 
@@ -36,5 +35,21 @@
         transposed-to-normal (apply map vector cols-expanded)]
     transposed-to-normal))
 
+(defn galaxies [grid]
+  (->> grid
+       expand-all
+       (map-indexed (fn [y line] (keep-indexed (fn [x item] (if (= \# item) [x y] nil)) line)))
+       (apply concat)))
+
+(defn dist [[x1 y1] [x2 y2]]
+  (+ (abs (- x1 x2)) (abs (- y1 y2))))
+
 (def example (read-input "src/y2023/d11e.txt"))
 ;(def input (read-input "src/y2023/d11.txt"))
+
+(defn all-pairs [gs]
+  (apply concat (for [g1 (range (dec (count gs)))]
+                  (for [g2 (range (inc g1) (count gs))]
+                    [(nth gs g1) (nth gs g2)]))))
+
+(reduce + (map (partial apply dist) (all-pairs (galaxies example))))
