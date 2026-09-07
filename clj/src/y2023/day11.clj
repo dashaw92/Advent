@@ -18,28 +18,34 @@
       (for [row (->rows grid)]
         (nth row y)))))
 
-(defn expand-via-empty [lines]
+(defn expand-via-empty [expansion-factor lines]
   (loop [lines lines
          buffer []]
     (let [current-line (first lines)
-          lines (rest lines)]
+          lines (rest lines)
+          value (if (all-empty? current-line) expansion-factor 1)]
       (if (nil? current-line)
         buffer
-        (if (all-empty? current-line)
-          (recur lines (concat buffer (repeat 2 current-line)))
-          (recur lines (concat buffer [current-line])))))))
+        (recur lines (conj buffer value))))))
 
-(defn expand-all [input]
-  (let [rows-expanded (expand-via-empty (->rows input))
-        cols-expanded (expand-via-empty (->cols rows-expanded))
-        transposed-to-normal (apply map vector cols-expanded)]
-    transposed-to-normal))
+(defn expand-all [expansion-factor input]
+  (let [expander (partial expand-via-empty expansion-factor)
+        rows-expanded (expander (->rows input))
+        cols-expanded (expander (->cols input))]
+    [rows-expanded cols-expanded]))
 
-(defn galaxies [grid]
+(defn original-galaxy-coords [grid]
   (->> grid
-       expand-all
        (map-indexed (fn [y line] (keep-indexed (fn [x item] (if (= \# item) [x y] nil)) line)))
        (apply concat)))
+
+(defn galaxies [expansion-factor grid]
+  (let [[ycoords xcoords] (expand-all expansion-factor grid)
+        gs (original-galaxy-coords grid)]
+    (for [[x y] gs
+          :let [actual-x (reduce + (take x xcoords))
+                actual-y (reduce + (take y ycoords))]]
+      [actual-x actual-y])))
 
 (defn dist [[x1 y1] [x2 y2]]
   (+ (abs (- x1 x2)) (abs (- y1 y2))))
@@ -52,11 +58,15 @@
                   (for [g2 (range (inc g1) (count gs))]
                     [(nth gs g1) (nth gs g2)]))))
 
-(defn solve-p1 [input]
-  (let [gs (galaxies input)
+(defn solve [expansion-factor input]
+  (let [gs (galaxies expansion-factor input)
         pairs (all-pairs gs)
         dists (map (partial apply dist) pairs)
         sum-dist (reduce + dists)]
     sum-dist))
 
-(solve-p1 input)
+(def p1-expansion 2)
+(def p2-expansion (int 1e6))
+
+(solve p1-expansion input)
+(solve p2-expansion input)
