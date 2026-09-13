@@ -23,8 +23,9 @@
   (let [tape (:tape state)
         in1 (nth tape in1)
         in2 (nth tape in2)
-        result (op in1 in2)]
-    {:tape (assoc tape out result)}))
+        result (op in1 in2)
+        tape' (assoc tape out result)]
+    (assoc state :tape tape')))
 
 (defn halt
   "Ignores the first argument to match the shape of opcode functions.
