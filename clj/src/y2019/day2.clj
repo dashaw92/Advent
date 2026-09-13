@@ -74,4 +74,28 @@
           state
           (recur (+ pc (count instrs)) (run-step instrs state)))))))
 
-(run (read-state "src/y2019/d2e.txt") :debug)
+(defn overwrite-cells
+  "Overwrite cells at :cell x with :val y (via vec of maps)."
+  [state cell->values]
+  (loop [state state
+         cell->values cell->values]
+    (let [next (first cell->values)
+          rest (rest cell->values)
+          next-state (assoc-in state [:tape (:cell next)] (:val next))]
+      (if (empty? cell->values)                             ;note: checking `rest` here would cause the final map to be ignored
+        state
+        (recur next-state rest)))))
+
+(defn solve-p1
+  "Part 1 requires you to overwrite the values at cells 1 and 2 in the input
+  tape to specific values. Pass the map of overwrites as a vec of maps with
+  keys :cell and :val corresponding to the index and value to set. Afterward,
+  return the value of the cell at position 0 in the tape."
+  [f overwrites]
+  (let [init-state (read-state f)
+        overwritten-state (overwrite-cells init-state overwrites)
+        output-state (run overwritten-state)
+        pos0 (first (:tape output-state))]
+    pos0))
+
+(solve-p1 "src/y2019/d2.txt" [{:cell 1 :val 12} {:cell 2 :val 2}])
