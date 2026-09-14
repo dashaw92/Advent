@@ -66,6 +66,20 @@
   [[addr] state]
   (assoc state :output (cons addr (:output state))))
 
+(defn jump
+  "Set state IP to in2 if (pred in1). Do nothing otherwise"
+  [pred [in1 in2] state]
+  (if (pred in1)
+    (assoc state :ip in2 :jumped true)
+    state))
+
+(defn cmp
+  "If (cmp-fn in1 in2), store 1 at out. Otherwise stores 0."
+  [cmp-fn [in1 in2 out] state]
+  (if (cmp-fn in1 in2)
+    (assoc-in state [:tape out] 1)
+    (assoc-in state [:tape out] 0)))
+
 (def opcodes
   "Map of opcode literals to parameters: :len and :func.
   :params explains how the opcode uses its arguments (and how many arguments it has).
@@ -76,6 +90,10 @@
    2  {:params [:r :r :w] :func (partial binop *)}
    3  {:params [:w] :func read-in}
    4  {:params [:r] :func write-out}
+   5  {:params [:r :r] :func (partial jump (partial not= 0))}
+   6  {:params [:r :r] :func (partial jump (partial zero?))}
+   7  {:params [:r :r :w] :func (partial cmp <)}
+   8  {:params [:r :r :w] :func (partial cmp =)}
    99 {:params [] :func halt}})
 
 (defn op+args
@@ -133,5 +151,13 @@
         output0 (first (:output state))]
     (if all-passed
       (println (str "Passed all diagnostic tests. Part 1 is " output0))
+      (println "Did not pass diagnostic tests."))
+    output0))
+(def p2
+  (let [state (run (read-state "src/y2019/d5.txt" [5]))
+        all-passed (every? zero? (rest (:output state)))
+        output0 (first (:output state))]
+    (if all-passed
+      (println (str "Passed all diagnostic tests. Part 2 is " output0))
       (println "Did not pass diagnostic tests."))
     output0))
