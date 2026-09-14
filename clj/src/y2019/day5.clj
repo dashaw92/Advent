@@ -8,7 +8,7 @@
   ([lit] (as-> lit $
                (str/split $ #",")
                (map ^[String] Integer/parseInt $)
-               (assoc {} :tape (vec $))))
+               (assoc {} :tape (vec $) :ip 0)))
   ([lit input] (bind-input (lit->state lit) input)))
 
 (defn read-state
@@ -110,18 +110,23 @@
   "Execute the Intcode program until it either halts (via :halted) or runs out of instructions (pc > count).
   Pass a marker argument (idiomatically :debug) to this function to print debug information."
   [state & debug?]
-  (loop [pc 0
-         state state]
-    (when debug? (println pc state))
+  (loop [state state]
+    (when debug? (println (:ip state) state))
     (if (contains? state :halted)
       state
-      (let [instrs (op+args state pc)]
+      (let [ip (:ip state)
+            instrs (op+args state ip)]
         (when debug? (println instrs))
         (if (nil? (first instrs))
           state
-          (recur (+ pc (count instrs)) (run-step instrs state)))))))
+          (let [next-state (run-step instrs state)
+                ip (:ip next-state)
+                next-ip (if (contains? next-state :jumped) ip (+ ip (count instrs)))
+                reset-jmp-state (dissoc next-state :jumped)
+                state (assoc reset-jmp-state :ip next-ip)]
+            (recur state)))))))
 
-(run (lit->state "1002,4,3,4,33" [0])) ;correctly halts {:tape [1002 4 3 4 99] :halted true ..}
+(run (lit->state "1002,4,3,4,33" [0]))                      ;correctly halts {:tape [1002 4 3 4 99] :halted true ..}
 (def p1
   (let [state (run (read-state "src/y2019/d5.txt" [1]))
         all-passed (every? zero? (rest (:output state)))
