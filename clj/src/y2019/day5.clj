@@ -32,9 +32,7 @@
         params (map to-mode params)]
     {:opcode base-opcode :params (reverse params)}))
 
-;Functions for Intcode opcodes take 3 arguments:
-;[[param0 param1 param2] [args...] state]
-;paramN = mode of parameter at index N in args (:position or :immediate)
+;Functions for Intcode opcodes take 2 arguments:
 ;args is a variable length vec of arguments required by the opcode
 ;state is the entire state map with the program tape in :tape
 ;The function should yield the next state as a map with the new tape at :tape (assoc state :tape (modify (:tape state)))
@@ -42,23 +40,21 @@
 (defn binop
   "Binary operations where the only code that changes between opcodes is the function applied to
   the operands. The state map will be updated with the result of the operation provided."
-  [op [param1 param2 _] [in1 in2 out] state]
+  [op [in1 in2 out] state]
   (let [tape (:tape state)
-        in1 (read-addr tape param1 in1)
-        in2 (read-addr tape param2 in2)
         result (op in1 in2)
         tape' (assoc tape out result)]
     (assoc state :tape tape')))
 
 (defn halt
-  "Ignores the first two arguments to match the shape of opcode functions.
+  "Ignores the first argument to match the shape of opcode functions.
   Adds the :halted flag to the state to indicate the program has finished."
-  [_ _ state] (assoc state :halted true))
+  [_ state] (assoc state :halted true))
 
 (defn read-in
   "'Reads' a single integer and stores it at [`addr`]. Input is popped from
   the front of the :input vec in state."
-  [_ [addr] state]
+  [[addr] state]
   (let [input (first (:input state))
         rest (rest (:input state))
         replaced-state (assoc-in state [:tape addr] input)]
@@ -67,19 +63,20 @@
 
 (defn write-out
   "Outputs the value at the address (pushes it onto the :output stack)"
-  [[param0 _ _] [addr] state]
-  (let [val (read-addr (:tape state) param0 addr)]
-    (assoc state :output (cons val (:output state)))))
+  [[addr] state]
+  (assoc state :output (cons addr (:output state))))
 
 (def opcodes
   "Map of opcode literals to parameters: :len and :func.
-  :len is how many arguments the opcode requires.
+  :params explains how the opcode uses its arguments (and how many arguments it has).
+    a :r argument is an argument the opcode reads from the tape and can be subject to parameter modes (:position or :immediate)
+    a :w argument is an output for the opcode and is *always* in :position mode
   :func is the opcode function to call when encountering this opcode (signature: [opcode [args] state])"
-  {1  {:len 3 :func (partial binop +)}
-   2  {:len 3 :func (partial binop *)}
-   3  {:len 1 :func read-in}
-   4  {:len 1 :func write-out}
-   99 {:len 0 :func halt}})
+  {1  {:params [:r :r :w] :func (partial binop +)}
+   2  {:params [:r :r :w] :func (partial binop *)}
+   3  {:params [:w] :func read-in}
+   4  {:params [:r] :func write-out}
+   99 {:params [] :func halt}})
 
 (defn op+args
   "Use the opcodes map to extract the next operation and its arguments from the tape.
@@ -89,17 +86,25 @@
         current (nth tape pc nil)
         {:keys [opcode params]} (extract-arg-modes current)
         rest (drop (inc pc) tape)
-        args (take (:len (opcodes opcode)) rest)]
+        arg-modes (:params (opcodes opcode))
+        args (take (count arg-modes) rest)
+        params (for [i (range (count arg-modes))
+                     :let [func-mode (nth arg-modes i)
+                           opcode-mode (nth params i)
+                           arg (nth args i)]]
+                 (if (= :w func-mode)
+                   arg
+                   (read-addr tape opcode-mode arg)))]
     (if (not (contains? opcodes opcode))
       (throw (IllegalArgumentException. (str "Invalid opcode " opcode)))
-      (cons [opcode params] args))))
+      (cons opcode params))))
 
 (defn run-step
   "Execute a single step of the Intcode program: state -> state'"
-  [[[opcode params] & args] state]
+  [[opcode & args] state]
   (let [args (vec args)
         func (:func (opcodes opcode))]
-    (func params args state)))
+    (func args state)))
 
 (defn run
   "Execute the Intcode program until it either halts (via :halted) or runs out of instructions (pc > count).
